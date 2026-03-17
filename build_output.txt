@@ -1,0 +1,46 @@
+﻿go : go: downloading github.com/gin-contrib/cors v1.7.2
+At line:1 char:145
++ ... ]::GetEnvironmentVariable("Path","User"); go build ./... 2>&1 | Out-F ...
++                                               ~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (go: downloading...rib/cors v1.7.2:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+go: downloading github.com/gin-gonic/gin v1.10.0
+go: downloading github.com/jackc/pgx/v5 v5.6.0
+go: downloading github.com/golang-jwt/jwt/v5 v5.2.1
+go: downloading github.com/matthewhartstonge/argon2 v1.0.0
+go: downloading github.com/trustelem/zxcvbn v1.0.1
+go: downloading github.com/joho/godotenv v1.5.1
+go: downloading github.com/kelseyhightower/envconfig v1.4.0
+go: downloading github.com/docker/docker v24.0.7+incompatible
+go: downloading golang.org/x/crypto v0.24.0
+go: downloading github.com/gin-contrib/sse v0.1.0
+go: downloading github.com/mattn/go-isatty v0.0.20
+go: downloading golang.org/x/net v0.26.0
+go: downloading github.com/jackc/puddle/v2 v2.2.1
+go: downloading github.com/jackc/pgpassfile v1.0.0
+go: downloading github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a
+go: downloading golang.org/x/text v0.16.0
+go: downloading github.com/go-playground/validator/v10 v10.22.0
+go: downloading github.com/pelletier/go-toml/v2 v2.2.2
+go: downloading github.com/ugorji/go/codec v1.2.12
+go: downloading google.golang.org/protobuf v1.34.2
+go: downloading gopkg.in/yaml.v3 v3.0.1
+go: downloading golang.org/x/sync v0.7.0
+go: downloading github.com/dlclark/regexp2 v1.11.0
+go: downloading golang.org/x/sys v0.21.0
+go: downloading github.com/gabriel-vasile/mimetype v1.4.4
+go: downloading github.com/go-playground/universal-translator v0.18.1
+go: downloading github.com/leodido/go-urn v1.4.0
+go: downloading github.com/go-playground/locales v0.14.1
+go: downloading github.com/docker/go-connections v0.4.0
+go: downloading github.com/docker/go-units v0.5.0
+go: downloading github.com/docker/distribution v2.8.3+incompatible
+go: downloading github.com/opencontainers/go-digest v1.0.0
+go: downloading github.com/opencontainers/image-spec v1.1.1
+go: downloading github.com/pkg/errors v0.9.1
+go: downloading github.com/Microsoft/go-winio v0.6.2
+go: downloading github.com/gogo/protobuf v1.3.2
+go: downloading github.com/distribution/reference v0.5.0
+# supadash/provisioner
+provisioner\docker.go:541:59: undefined: container.ListOptions

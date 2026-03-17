@@ -1,0 +1,8 @@
+﻿go : # supadash/provisioner
+At line:1 char:145
++ ... ]::GetEnvironmentVariable("Path","User"); go build ./... 2>&1 | Out-F ...
++                                               ~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (# supadash/provisioner:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+provisioner\docker.go:541:59: undefined: container.ListOptions
