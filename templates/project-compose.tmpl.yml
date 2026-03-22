@@ -22,11 +22,12 @@ networks:
 volumes:
   db-data-{{.ProjectID}}:
   storage-data-{{.ProjectID}}:
+  minio-data-{{.ProjectID}}:
 
 services:
   # PostgreSQL Database
   db:
-    image: supabase/postgres:15.1.0.147
+    image: supabase/postgres:15.8.1.048
     container_name: {{.ProjectID}}-db
     restart: unless-stopped
     networks:
@@ -39,6 +40,8 @@ services:
       POSTGRES_PASSWORD: {{.DBPassword}}
       POSTGRES_DB: postgres
       POSTGRES_HOST: /var/run/postgresql
+      JWT_SECRET: {{.JWTSecret}}
+      JWT_EXP: 3600
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -58,18 +61,53 @@ services:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
       KONG_DNS_ORDER: LAST,A,CNAME
-      KONG_PLUGINS: request-transformer,cors,key-auth,acl
+      KONG_PLUGINS: request-transformer,cors,key-auth,acl,basic-auth
+      KONG_NGINX_PROXY_PROXY_BUFFER_SIZE: 160k
+      KONG_NGINX_PROXY_PROXY_BUFFERS: 64 160k
       SUPABASE_ANON_KEY: {{.AnonKey}}
       SUPABASE_SERVICE_KEY: {{.ServiceKey}}
+      DASHBOARD_USERNAME: {{.DashboardUser}}
+      DASHBOARD_PASSWORD: {{.DashboardPass}}
     volumes:
       - ./kong.yml:/var/lib/kong/kong.yml:ro
     depends_on:
       db:
         condition: service_healthy
 
+  # Studio Dashboard UI
+  studio:
+    image: supabase/studio:2026.03.04-sha-0043607
+    container_name: {{.ProjectID}}-studio
+    restart: unless-stopped
+    networks:
+      - supabase-{{.ProjectID}}
+    ports:
+      - "{{.StudioPort}}:3000"
+    environment:
+      HOSTNAME: 0.0.0.0
+      STUDIO_PG_META_URL: http://meta:8080
+      POSTGRES_PASSWORD: {{.DBPassword}}
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_PUBLIC_URL: http://localhost:{{.APIPort}}
+      SUPABASE_ANON_KEY: {{.AnonKey}}
+      SUPABASE_SERVICE_KEY: {{.ServiceKey}}
+      AUTH_JWT_SECRET: {{.JWTSecret}}
+      LOGFLARE_API_KEY: your-super-secret-and-long-logflare-key
+      LOGFLARE_URL: http://analytics:4000
+      NEXT_PUBLIC_ENABLE_LOGS: "true"
+      NEXT_ANALYTICS_BACKEND_PROVIDER: postgres
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/platform/profile').then((r) => {if (r.status !== 200) throw new Error(r.status)})"]
+      timeout: 5s
+      interval: 5s
+      retries: 3
+    depends_on:
+      analytics:
+        condition: service_healthy
+
   # GoTrue Auth Service
   auth:
-    image: supabase/gotrue:v2.99.0
+    image: supabase/gotrue:v2.174.0
     container_name: {{.ProjectID}}-auth
     restart: unless-stopped
     networks:
@@ -90,13 +128,20 @@ services:
       GOTRUE_JWT_SECRET: {{.JWTSecret}}
       GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
       GOTRUE_MAILER_AUTOCONFIRM: "true"
+      GOTRUE_EXTERNAL_PHONE_ENABLED: "true"
+      GOTRUE_SMS_AUTOCONFIRM: "true"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:9999/health"]
+      timeout: 5s
+      interval: 5s
+      retries: 3
     depends_on:
       db:
         condition: service_healthy
 
   # PostgREST REST API
   rest:
-    image: postgrest/postgrest:v11.2.2
+    image: postgrest/postgrest:v12.2.12
     container_name: {{.ProjectID}}-rest
     restart: unless-stopped
     networks:
@@ -107,13 +152,15 @@ services:
       PGRST_DB_ANON_ROLE: anon
       PGRST_JWT_SECRET: {{.JWTSecret}}
       PGRST_DB_USE_LEGACY_GUCS: "false"
+      PGRST_APP_SETTINGS_JWT_SECRET: {{.JWTSecret}}
+      PGRST_APP_SETTINGS_JWT_EXP: 3600
     depends_on:
       db:
         condition: service_healthy
 
   # Realtime WebSocket Service
   realtime:
-    image: supabase/realtime:v2.25.50
+    image: supabase/realtime:v2.34.47
     container_name: {{.ProjectID}}-realtime
     restart: unless-stopped
     networks:
@@ -134,13 +181,39 @@ services:
       ERL_AFLAGS: -proto_dist inet_tcp
       ENABLE_TAILSCALE: "false"
       DNS_NODES: "''"
+      SEED_SELF_HOST: "true"
+      LOG_LEVEL: error
+    healthcheck:
+      test: ["CMD", "curl", "-sSfL", "--head", "-o", "/dev/null", "-H", "Authorization: Bearer {{.AnonKey}}", "http://127.0.0.1:4000/api/tenants/realtime-dev/health"]
+      timeout: 5s
+      interval: 5s
+      retries: 3
     depends_on:
       db:
         condition: service_healthy
 
+  # MinIO S3-Compatible Object Storage
+  minio:
+    image: ghcr.io/coollabsio/minio:RELEASE.2025-10-15T17-29-55Z
+    container_name: {{.ProjectID}}-minio
+    restart: unless-stopped
+    networks:
+      - supabase-{{.ProjectID}}
+    command: server --console-address ":9001" /data
+    environment:
+      MINIO_ROOT_USER: supabase
+      MINIO_ROOT_PASSWORD: {{.DBPassword}}
+    volumes:
+      - minio-data-{{.ProjectID}}:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 20s
+      retries: 10
+
   # Storage Service
   storage:
-    image: supabase/storage-api:v0.43.11
+    image: supabase/storage-api:v1.14.6
     container_name: {{.ProjectID}}-storage
     restart: unless-stopped
     networks:
@@ -148,19 +221,34 @@ services:
     volumes:
       - storage-data-{{.ProjectID}}:/var/lib/storage
     environment:
-      ANON_KEY: {{.AnonKey}}
-      SERVICE_KEY: {{.ServiceKey}}
-      POSTGREST_URL: http://rest:3000
-      PGRST_JWT_SECRET: {{.JWTSecret}}
+      SERVER_PORT: 5000
+      SERVER_REGION: local
+      MULTI_TENANT: "false"
+      AUTH_JWT_SECRET: {{.JWTSecret}}
       DATABASE_URL: postgres://supabase_storage_admin:{{.DBPassword}}@db:5432/postgres
-      FILE_SIZE_LIMIT: 52428800
-      STORAGE_BACKEND: file
-      FILE_STORAGE_BACKEND_PATH: /var/lib/storage
-      TENANT_ID: stub
-      REGION: stub
-      GLOBAL_S3_BUCKET: stub
+      DB_INSTALL_ROLES: "false"
+      STORAGE_BACKEND: s3
+      STORAGE_S3_BUCKET: stub
+      STORAGE_S3_ENDPOINT: http://minio:9000
+      STORAGE_S3_FORCE_PATH_STYLE: "true"
+      STORAGE_S3_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: supabase
+      AWS_SECRET_ACCESS_KEY: {{.DBPassword}}
+      UPLOAD_FILE_SIZE_LIMIT: 524288000
+      TUS_URL_PATH: upload/resumable
+      ENABLE_IMAGE_TRANSFORMATION: "true"
+      IMGPROXY_URL: http://imgproxy:8080
+      DATABASE_SEARCH_PATH: storage
+      NODE_ENV: production
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:5000/status"]
+      timeout: 5s
+      interval: 5s
+      retries: 3
     depends_on:
       db:
+        condition: service_healthy
+      minio:
         condition: service_healthy
       rest:
         condition: service_started
@@ -173,14 +261,19 @@ services:
     networks:
       - supabase-{{.ProjectID}}
     environment:
-      IMGPROXY_BIND: ":5001"
+      IMGPROXY_BIND: ":8080"
       IMGPROXY_LOCAL_FILESYSTEM_ROOT: /
       IMGPROXY_USE_ETAG: "true"
       IMGPROXY_ENABLE_WEBP_DETECTION: "true"
+    healthcheck:
+      test: ["CMD", "imgproxy", "health"]
+      timeout: 5s
+      interval: 5s
+      retries: 3
 
   # Database Meta Service
   meta:
-    image: supabase/postgres-meta:v0.68.0
+    image: supabase/postgres-meta:v0.89.3
     container_name: {{.ProjectID}}-meta
     restart: unless-stopped
     networks:
@@ -196,7 +289,7 @@ services:
       db:
         condition: service_healthy
 
-  # Analytics (Optional)
+  # Analytics (Logflare)
   analytics:
     image: supabase/logflare:1.4.0
     container_name: {{.ProjectID}}-analytics
@@ -206,21 +299,29 @@ services:
     environment:
       LOGFLARE_NODE_HOST: 127.0.0.1
       DB_USERNAME: supabase_admin
-      DB_DATABASE: postgres
+      DB_DATABASE: _supabase
       DB_HOSTNAME: db
       DB_PORT: 5432
       DB_PASSWORD: {{.DBPassword}}
       DB_SCHEMA: _analytics
       LOGFLARE_API_KEY: your-super-secret-and-long-logflare-key
       LOGFLARE_SINGLE_TENANT: "true"
+      LOGFLARE_SINGLE_TENANT_MODE: "true"
       LOGFLARE_SUPABASE_MODE: "true"
       LOGFLARE_MIN_CLUSTER_SIZE: 1
-      RELEASE_COOKIE: cookie
+      POSTGRES_BACKEND_URL: postgresql://supabase_admin:{{.DBPassword}}@db:5432/_supabase
+      POSTGRES_BACKEND_SCHEMA: _analytics
+      LOGFLARE_FEATURE_FLAG_OVERRIDE: multibackend=true
+    healthcheck:
+      test: ["CMD", "curl", "http://127.0.0.1:4000/health"]
+      timeout: 5s
+      interval: 5s
+      retries: 10
     depends_on:
       db:
         condition: service_healthy
 
-  # Vector Service (pgvector)
+  # Vector Log Collector
   vector:
     image: timberio/vector:0.28.1-alpine
     container_name: {{.ProjectID}}-vector
@@ -229,6 +330,74 @@ services:
       - supabase-{{.ProjectID}}
     volumes:
       - ./vector.yml:/etc/vector/vector.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: ["--config", "etc/vector/vector.yml"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:9001/health"]
+      timeout: 5s
+      interval: 5s
+      retries: 3
     depends_on:
       analytics:
         condition: service_started
+
+  # Edge Functions Runtime
+  edge-functions:
+    image: supabase/edge-runtime:v1.67.4
+    container_name: {{.ProjectID}}-edge-functions
+    restart: unless-stopped
+    networks:
+      - supabase-{{.ProjectID}}
+    environment:
+      JWT_SECRET: {{.JWTSecret}}
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_ANON_KEY: {{.AnonKey}}
+      SUPABASE_SERVICE_ROLE_KEY: {{.ServiceKey}}
+      SUPABASE_DB_URL: postgresql://postgres:{{.DBPassword}}@db:5432/postgres
+      VERIFY_JWT: "false"
+    volumes:
+      - ./functions:/home/deno/functions
+    command: ["start", "--main-service", "/home/deno/functions/main"]
+    healthcheck:
+      test: ["CMD", "echo", "Edge Functions is healthy"]
+      timeout: 5s
+      interval: 5s
+      retries: 3
+    depends_on:
+      analytics:
+        condition: service_healthy
+
+  # Supavisor Connection Pooler
+  supavisor:
+    image: supabase/supavisor:2.5.1
+    container_name: {{.ProjectID}}-supavisor
+    restart: unless-stopped
+    networks:
+      - supabase-{{.ProjectID}}
+    environment:
+      POOLER_TENANT_ID: dev_tenant
+      POOLER_POOL_MODE: transaction
+      POOLER_DEFAULT_POOL_SIZE: 20
+      POOLER_MAX_CLIENT_CONN: 100
+      PORT: 4000
+      POSTGRES_PORT: 5432
+      POSTGRES_HOSTNAME: db
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: {{.DBPassword}}
+      DATABASE_URL: ecto://supabase_admin:{{.DBPassword}}@db:5432/_supabase
+      CLUSTER_POSTGRES: "true"
+      SECRET_KEY_BASE: UpNVntn3cDxHJpq99YMc1T1AQgQpc8kfYTuRgBiYa15BLrx8etQoXz3gZv1/u2oq
+      VAULT_ENC_KEY: {{.JWTSecret}}
+      API_JWT_SECRET: {{.JWTSecret}}
+      METRICS_JWT_SECRET: {{.JWTSecret}}
+      REGION: local
+      ERL_AFLAGS: -proto_dist inet_tcp
+    healthcheck:
+      test: ["CMD", "curl", "-sSfL", "-o", "/dev/null", "http://127.0.0.1:4000/api/health"]
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    depends_on:
+      db:
+        condition: service_healthy
+
