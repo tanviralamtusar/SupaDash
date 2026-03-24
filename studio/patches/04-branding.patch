@@ -1,0 +1,41 @@
+--- a/components/ui/Logo.tsx
++++ b/components/ui/Logo.tsx
+@@ -1,10 +1,10 @@
+ /**
+- * Supabase Logo component
++ * SupaDash Logo component
+  */
+-import supabaseLogo from 'public/img/supabase-logo.svg'
++import supadashLogo from 'public/img/supadash-full-white.png'
+ 
+ export default function Logo({ className }: { className?: string }) {
+   return (
+-    <img src={supabaseLogo} alt="Supabase" className={className} />
++    <img src={supadashLogo} alt="SupaDash" className={className} style={{ height: '24px' }} />
+   )
+ }
+
+--- a/pages/_document.tsx
++++ b/pages/_document.tsx
+@@ -5,8 +5,8 @@
+     return (
+       <Html>
+         <Head>
+-          <link rel="icon" type="image/png" href="/favicon/favicon.ico" />
+-          <title>Supabase</title>
++          <link rel="icon" type="image/png" href="/img/supadash-icon.png" />
++          <title>SupaDash</title>
+         </Head>
+         <body>
+           <Main />
+
+--- a/next.config.js
++++ b/next.config.js
+@@ -1,5 +1,9 @@
++/** @type {import('next').NextConfig} */
+ const nextConfig = {
++  env: {
++    NEXT_PUBLIC_SITE_TITLE: 'SupaDash',
++  },
+   // ... existing config
+ }

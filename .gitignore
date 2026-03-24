@@ -27,6 +27,7 @@ push_out.txt
 .vscode/
 *.swp
 *.swo
+.agent/
 
 # OS
 .DS_Store
@@ -35,3 +36,6 @@ Thumbs.db
 # Projects data (created at runtime)
 projects/
 backups/
+
+# Studio build artifacts
+studio/.build/

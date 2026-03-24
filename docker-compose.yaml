@@ -24,7 +24,7 @@ services:
       - 'ALLOW_SIGNUP=${ALLOW_SIGNUP:-true}'
       - 'ALLOWED_ORIGINS=${SERVICE_URL_SUPADASHAPI}'
       - 'RATE_LIMIT_REQUESTS=${RATE_LIMIT_REQUESTS:-100}'
-      - 'DOMAIN_STUDIO_URL=${SERVICE_URL_SUPADASHAPI}'
+      - 'DOMAIN_STUDIO_URL=${SERVICE_URL_SUPADASHSTUDIO}'
       - 'DOMAIN_BASE=${DOMAIN_BASE:-supadash.local}'
       - 'SERVICE_VERSION_URL=${SERVICE_VERSION_URL:-https://supamanager.io/updates}'
       - 'PROVISIONING_ENABLED=${PROVISIONING_ENABLED:-true}'
@@ -35,6 +35,32 @@ services:
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
       - 'supadash-projects:/app/projects'
+
+  supadash-studio:
+    build:
+      context: ./studio
+      dockerfile: Dockerfile
+    image: supadash/studio:latest
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - '-e'
+        - "fetch('http://127.0.0.1:3000/api/platform/profile').then(r => { if (r.status !== 200) throw new Error(r.status) })"
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    depends_on:
+      supadash-api:
+        condition: service_healthy
+    environment:
+      - SERVICE_URL_SUPADASHSTUDIO_3000
+      - 'SUPADASH_API_URL=http://supadash-api:8080'
+      - 'STUDIO_PG_META_URL=http://supadash-api:8080/platform/pg-meta'
+      - 'NEXT_PUBLIC_SITE_TITLE=SupaDash'
+      - 'NEXT_PUBLIC_ENABLE_LOGS=true'
+      - 'NEXT_ANALYTICS_BACKEND_PROVIDER=postgres'
+      - 'HOSTNAME=0.0.0.0'
 
   supadash-db:
     image: 'postgres:15-alpine'
@@ -52,3 +78,4 @@ services:
 volumes:
   supadash-db-data:
   supadash-projects:
+
