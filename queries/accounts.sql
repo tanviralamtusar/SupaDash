@@ -17,3 +17,18 @@ SELECT * FROM public.accounts WHERE id = $1;
 
 -- name: GetAccountByGoTrueID :one
 SELECT * FROM public.accounts WHERE gotrue_id = $1;
+
+-- name: Setup2FA :exec
+UPDATE public.accounts
+SET totp_secret = $2
+WHERE id = $1;
+
+-- name: Enable2FA :exec
+UPDATE public.accounts
+SET totp_enabled = true
+WHERE id = $1;
+
+-- name: Disable2FA :exec
+UPDATE public.accounts
+SET totp_enabled = false, totp_secret = NULL
+WHERE id = $1;

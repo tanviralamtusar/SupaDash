@@ -2,25 +2,46 @@ package api
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-func (a *Api) getPlatformProjects(c *gin.Context) {
+type OrganizationProjectsResponse struct {
+	Projects   []Project  `json:"projects"`
+	Pagination Pagination `json:"pagination"`
+}
+
+type Pagination struct {
+	Count int32 `json:"count"`
+}
+
+func (a *Api) getPlatformOrganizationProjects(c *gin.Context) {
 	account, err := a.GetAccountFromRequest(c)
 	if err != nil {
-		c.JSON(401, gin.H{"error": "Unauthorized"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	projects, err := a.queries.GetProjectsForAccountId(c, account.ID)
+	slug := c.Param("slug")
+	org, err := a.queries.GetOrganizationBySlug(c, slug)
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Internal Server Error"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Organization not found"})
+		return
+	}
+
+	allProjects, err := a.queries.GetProjectsForAccountId(c, account.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
 
 	supaProjects := []Project{}
-	for _, project := range projects {
+	for _, project := range allProjects {
+		if project.OrganizationID != org.ID {
+			continue
+		}
+
 		dbPort := int32(0)
 		if project.PostgresPort.Valid {
 			dbPort = project.PostgresPort.Int32
@@ -70,5 +91,16 @@ func (a *Api) getPlatformProjects(c *gin.Context) {
 		_ = apiEndpoint // Used for future service URL response extensions
 	}
 
-	c.JSON(http.StatusOK, supaProjects)
+	if supaProjects == nil {
+		supaProjects = []Project{}
+	}
+
+	response := OrganizationProjectsResponse{
+		Projects: supaProjects,
+		Pagination: Pagination{
+			Count: int32(len(supaProjects)),
+		},
+	}
+
+	c.JSON(http.StatusOK, response)
 }

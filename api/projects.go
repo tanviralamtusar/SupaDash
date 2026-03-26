@@ -22,6 +22,11 @@ const (
 	StatusFunctionsFailed   Status = "FUNCTIONS_FAILED"
 )
 
+type Database struct {
+	Identifier       string `json:"identifier"`
+	InfraComputeSize string `json:"infra_compute_size"`
+}
+
 type Project struct {
 	Id                       int32         `json:"id"`
 	Ref                      string        `json:"ref"`
@@ -47,4 +52,5 @@ type Project struct {
 	IsBranchEnabled          bool          `json:"is_branch_enabled"`
 	IsPhysicalBackupsEnabled bool          `json:"is_physical_backups_enabled"`
 	JwtSecret                string        `json:"jwt_secret,omitempty"` // JWT secret for the project
+	Databases                []Database    `json:"databases"`
 }

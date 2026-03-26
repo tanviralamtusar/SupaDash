@@ -120,3 +120,42 @@ func (q *Queries) SetAccountName(ctx context.Context, arg SetAccountNameParams) 
 	_, err := q.db.Exec(ctx, setAccountName, arg.ID, arg.FirstName, arg.LastName)
 	return err
 }
+
+const setup2FA = `-- name: Setup2FA :exec
+UPDATE public.accounts
+SET totp_secret = $2
+WHERE id = $1
+`
+
+type Setup2FAParams struct {
+	ID         int32
+	TotpSecret []byte
+}
+
+func (q *Queries) Setup2FA(ctx context.Context, arg Setup2FAParams) error {
+	_, err := q.db.Exec(ctx, setup2FA, arg.ID, arg.TotpSecret)
+	return err
+}
+
+const enable2FA = `-- name: Enable2FA :exec
+UPDATE public.accounts
+SET totp_enabled = true
+WHERE id = $1
+`
+
+func (q *Queries) Enable2FA(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, enable2FA, id)
+	return err
+}
+
+const disable2FA = `-- name: Disable2FA :exec
+UPDATE public.accounts
+SET totp_enabled = false, totp_secret = NULL
+WHERE id = $1
+`
+
+func (q *Queries) Disable2FA(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, disable2FA, id)
+	return err
+}
+

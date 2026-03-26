@@ -13,7 +13,7 @@ import (
 
 type ProjectCreationBody struct {
 	CloudProvider                  string `json:"cloud_provider"`
-	OrgId                          int32  `json:"org_id"`
+	OrganizationSlug               string `json:"organization_slug"`
 	Name                           string `json:"name"`
 	DbPass                         string `json:"db_pass"`
 	DbRegion                       string `json:"db_region"`
@@ -33,6 +33,7 @@ type ProjectCreationResponse struct {
 	Name                     string   `json:"name"`
 	Status                   string   `json:"status"`
 	OrganizationId           int32    `json:"organization_id"`
+	OrganizationSlug         string   `json:"organization_slug"`
 	CloudProvider            string   `json:"cloud_provider"`
 	Region                   string   `json:"region"`
 	InsertedAt               string   `json:"inserted_at"`
@@ -60,6 +61,13 @@ func (a *Api) postPlatformProjects(c *gin.Context) {
 		return
 	}
 
+	org, err := a.queries.GetOrganizationBySlug(c, createProject.OrganizationSlug)
+	if err != nil {
+		a.logger.Error(fmt.Sprintf("Failed to find organization by slug %s: %v", createProject.OrganizationSlug, err))
+		c.JSON(400, gin.H{"error": "Invalid organization slug"})
+		return
+	}
+
 	// Generate secrets for the new project
 	secrets, err := provisioner.GenerateProjectSecrets()
 	if err != nil {
@@ -74,7 +82,7 @@ func (a *Api) postPlatformProjects(c *gin.Context) {
 	proj, err := a.queries.CreateProject(c.Request.Context(), database.CreateProjectParams{
 		ProjectRef:     projectRef,
 		ProjectName:    createProject.Name,
-		OrganizationID: createProject.OrgId,
+		OrganizationID: int32(org.ID),
 		JwtSecret:      secrets.JWTSecret,
 		CloudProvider:  "DOCKER",
 		Region:         "LOCAL",
@@ -161,6 +169,7 @@ func (a *Api) postPlatformProjects(c *gin.Context) {
 		Name:                     proj.ProjectName,
 		Status:                   proj.Status,
 		OrganizationId:           proj.OrganizationID,
+		OrganizationSlug:         createProject.OrganizationSlug,
 		CloudProvider:            "DOCKER",
 		Region:                   "LOCAL",
 		InsertedAt:               proj.CreatedAt.Time.Format("2006-01-02T15:04:05.999Z"),

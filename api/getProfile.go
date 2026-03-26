@@ -17,6 +17,7 @@ type ProfileReturn struct {
 	GotrueId         string        `json:"gotrue_id"`
 	FreeProjectLimit int           `json:"free_project_limit"`
 	DisabledFeatures []interface{} `json:"disabled_features"`
+	TotpEnabled      bool          `json:"totp_enabled"`
 }
 
 func (a *Api) getProfile(c *gin.Context) {
@@ -37,5 +38,6 @@ func (a *Api) getProfile(c *gin.Context) {
 		GotrueId:         account.GotrueID,
 		FreeProjectLimit: 9999,
 		DisabledFeatures: []interface{}{},
+		TotpEnabled:      account.TotpEnabled,
 	})
 }

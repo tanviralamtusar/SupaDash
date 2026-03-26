@@ -12,8 +12,11 @@ CREATE TABLE IF NOT EXISTS public.accounts
     id            serial      not null,
     gotrue_id     text        not null default gen_random_uuid()::text,
 
-    email         text        not null,
+	email         text        not null,
     password_hash text        not null,
+
+    totp_secret   text,
+    totp_enabled  boolean     not null default false,
 
     username      text        not null,
 

@@ -13,6 +13,8 @@ type Account struct {
 	GotrueID     string
 	Email        string
 	PasswordHash string
+	TotpSecret   []byte
+	TotpEnabled  bool
 	Username     string
 	FirstName    pgtype.Text
 	LastName     pgtype.Text

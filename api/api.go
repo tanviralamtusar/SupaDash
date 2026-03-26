@@ -21,7 +21,7 @@ type Api struct {
 	isHealthy       bool
 	logger          *slog.Logger
 	config          *conf.Config
-	queries         *database.Queries
+	queries         Querier
 	pgPool          *pgxpool.Pool
 	argon           argon2.Config
 	provisioner     provisioner.Provisioner
@@ -285,20 +285,12 @@ func (a *Api) Router() *gin.Engine {
 		platform.GET("/stripe/invoices/overdue", a.getPlatformOverdueInvoices)
 		platform.GET("/projects-resource-warnings", a.getPlatformProjectsResourceWarnings)
 
-		// pg-meta routes for database metadata queries
+		// pg-meta routes for database metadata queries via reverse proxy
 		platformPgMeta := platform.Group("/pg-meta")
 		{
-			specificProject := platformPgMeta.Group("/:ref")
-			{
-				specificProject.POST("/query", a.postPlatformPgMetaQuery)
-				specificProject.GET("/tables", a.getPlatformPgMetaTables)
-				specificProject.POST("/tables", a.postPlatformPgMetaTables)
-				specificProject.PATCH("/tables", a.patchPlatformPgMetaTables)
-				specificProject.DELETE("/tables", a.deletePlatformPgMetaTables)
-				specificProject.POST("/columns", a.postPlatformPgMetaColumns)
-				specificProject.GET("/types", a.getPlatformPgMetaTypes)
-				specificProject.GET("/publications", a.getPlatformPgMetaPublications)
-			}
+			// Wildcard route to proxy any request to /platform/pg-meta/:ref/*path
+			// to the project's Kong /pg/*path
+			platformPgMeta.Any("/:ref/*path", a.anyPlatformPgMetaProxy)
 		}
 
 		platformProjects := platform.Group("/projects")
@@ -310,6 +302,9 @@ func (a *Api) Router() *gin.Engine {
 				specificProject.GET(INDEX, a.getPlatformProject)
 				specificProject.GET("/settings", a.getPlatformProjectSettings)
 				specificProject.GET("/billing/addons", a.getPlatformProjectBillingAddons)
+				specificProject.GET("/status", a.getProjectStatus)
+				specificProject.GET("/service-versions", a.getPlatformProjectServiceVersions)
+				specificProject.GET("/members", a.getPlatformProjectMembers)
 
 				// Analytics routes
 				analytics := specificProject.Group("/analytics/endpoints")
@@ -333,9 +328,11 @@ func (a *Api) Router() *gin.Engine {
 
 		platformOrganizations := platform.Group("/organizations")
 		{
+			platformOrganizations.GET(INDEX, a.getOrganizations)
 			platformOrganizations.POST(INDEX, a.postPlatformOrganizations)
 			specificOrganization := platformOrganizations.Group("/:slug")
 			{
+				specificOrganization.GET("/projects", a.getPlatformOrganizationProjects)
 				specificOrganization.GET("/billing/subscription", a.getPlatformOrganizationSubscription)
 				specificOrganization.GET("/usage", a.getPlatformOrganizationUsage)
 			}
@@ -365,8 +362,13 @@ func (a *Api) Router() *gin.Engine {
 
 		auth := v1.Group("/auth")
 		{
-			auth.POST("/token", a.postAuthToken)
+			auth.POST("/token", a.postGotrueToken)
 			auth.POST("/logout", a.postAuthLogout)
+	
+			// MFA endpoints
+			auth.POST("/mfa/setup", a.postMfaSetup)
+			auth.POST("/mfa/verify", a.postMfaVerify)
+			auth.DELETE("/mfa", a.deleteMfa)
 		}
 
 		v1Projects := v1.Group("/projects")
@@ -375,6 +377,11 @@ func (a *Api) Router() *gin.Engine {
 			{
 				specificProject.GET("/custom-hostname", a.getProjectCustomHostname)
 				specificProject.GET("/upgrade/eligibility", a.getProjectUpgradeEligibility)
+				
+				// Edge Function Secrets management
+				specificProject.GET("/secrets", a.getV1ProjectSecrets)
+				specificProject.POST("/secrets", a.postV1ProjectSecrets)
+				specificProject.DELETE("/secrets", a.deleteV1ProjectSecrets)
 			}
 		}
 	}

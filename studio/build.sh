@@ -42,11 +42,14 @@ cp -r apps/studio "$BUILD_DIR/studio"
 cp -r packages "$BUILD_DIR/packages" 2>/dev/null || true
 echo "  ✓ Studio app extracted"
 
-# Step 4: Apply patches
-echo "[4/6] Applying SupaDash patches..."
-cd "$BUILD_DIR/studio"
-"$SCRIPT_DIR/patch.sh" "$BUILD_DIR/studio" "$SCRIPT_DIR"
-echo "  ✓ All patches applied"
+# Step 4: Apply patches (Disabled)
+# Patches are no longer used; we use the files/ overlay directory exclusively
+echo "[4/6] Skipping legacy patches..."
+
+# Step 4.5: Clean out original Supabase API routes to route through our proxy
+echo "[4.5/6] Cleaning up original Next.js API routes..."
+rm -rf "$BUILD_DIR/studio/pages/api"
+mkdir -p "$BUILD_DIR/studio/pages/api"
 
 # Step 5: Copy replacement files
 echo "[5/6] Copying replacement files..."

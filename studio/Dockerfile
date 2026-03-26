@@ -28,6 +28,11 @@ ENV NODE_ENV=production
 ARG SUPADASH_API_URL=http://localhost:8080
 ENV NEXT_PUBLIC_SUPADASH_API_URL=$SUPADASH_API_URL
 
+# Enable the multi-project platform experience
+ENV NEXT_PUBLIC_IS_PLATFORM=true
+# Set API URL to be caught by our custom proxy
+ENV NEXT_PUBLIC_API_URL=/api
+
 RUN \
   if [ -f yarn.lock ]; then yarn build; \
   elif [ -f package-lock.json ]; then npm run build; \

@@ -53,9 +53,9 @@ func (a *Api) postAuthToken(c *gin.Context) {
 
 	// 4. Generate new Access Token
 	claims := jwt.RegisteredClaims{
-		Issuer:    "supamanager.io",
+		Issuer:    "supadash.io",
 		Subject:   account.GotrueID,
-		Audience:  []string{"supamanager.io"},
+		Audience:  []string{"supadash.io"},
 		ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(1 * time.Hour)},
 		NotBefore: &jwt.NumericDate{Time: time.Now()},
 		IssuedAt:  &jwt.NumericDate{Time: time.Now()},
