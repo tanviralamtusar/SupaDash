@@ -1,0 +1,11 @@
+node_modules
+.next
+.build
+.git
+out
+build.sh
+build.ps1
+*.log
+patches
+patch.sh
+SupaDash
