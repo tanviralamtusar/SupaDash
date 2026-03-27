@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"supadash/database"
 	"supadash/provisioner"
 
@@ -91,12 +90,7 @@ func (a *Api) inviteTeamMember(c *gin.Context) {
 
 func (a *Api) updateTeamMemberRole(c *gin.Context) {
 	slug := c.Param("slug")
-	idParam := c.Param("id")
-	targetAccountID, err := strconv.Atoi(idParam)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
-		return
-	}
+	gotrueID := c.Param("id")
 
 	var req UpdateRoleRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -110,9 +104,15 @@ func (a *Api) updateTeamMemberRole(c *gin.Context) {
 		return
 	}
 
+	targetAccount, err := a.queries.GetAccountByGoTrueID(c.Request.Context(), gotrueID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Member account not found"})
+		return
+	}
+
 	err = a.queries.UpdateOrganizationMemberRole(c.Request.Context(), database.UpdateOrganizationMemberRoleParams{
 		OrganizationID: org.ID,
-		AccountID:      int32(targetAccountID),
+		AccountID:      targetAccount.ID,
 		Role:           req.Role,
 	})
 	if err != nil {
@@ -125,12 +125,7 @@ func (a *Api) updateTeamMemberRole(c *gin.Context) {
 
 func (a *Api) removeTeamMember(c *gin.Context) {
 	slug := c.Param("slug")
-	idParam := c.Param("id")
-	targetAccountID, err := strconv.Atoi(idParam)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
-		return
-	}
+	gotrueID := c.Param("id")
 
 	org, err := a.queries.GetOrganizationBySlug(c.Request.Context(), slug)
 	if err != nil {
@@ -138,9 +133,15 @@ func (a *Api) removeTeamMember(c *gin.Context) {
 		return
 	}
 
+	targetAccount, err := a.queries.GetAccountByGoTrueID(c.Request.Context(), gotrueID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Member account not found"})
+		return
+	}
+
 	err = a.queries.RemoveOrganizationMember(c.Request.Context(), database.RemoveOrganizationMemberParams{
 		OrganizationID: org.ID,
-		AccountID:      int32(targetAccountID),
+		AccountID:      targetAccount.ID,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove member"})

@@ -20,12 +20,18 @@ func floatToNumeric(f float64) pgtype.Numeric {
 	return n
 }
 
+// StatsBroadcaster defines an interface for broadcasting real-time stats
+type StatsBroadcaster interface {
+	BroadcastStats(projectRef string, stats interface{})
+}
+
 // AnalysisCollector runs background goroutines to collect container stats
 type AnalysisCollector struct {
 	logger      *slog.Logger
 	queries     *database.Queries
 	provisioner *DockerProvisioner
 	burstPool   *BurstPoolManager
+	broadcaster StatsBroadcaster
 }
 
 // NewAnalysisCollector creates a new analysis collector
@@ -34,12 +40,14 @@ func NewAnalysisCollector(
 	queries *database.Queries,
 	provisioner *DockerProvisioner,
 	burstPool *BurstPoolManager,
+	broadcaster StatsBroadcaster,
 ) *AnalysisCollector {
 	return &AnalysisCollector{
 		logger:      logger,
 		queries:     queries,
 		provisioner: provisioner,
 		burstPool:   burstPool,
+		broadcaster: broadcaster,
 	}
 }
 
@@ -185,6 +193,22 @@ func (ac *AnalysisCollector) collectContainerStats(ctx context.Context, projectI
 	// Update burst pool usage
 	if ac.burstPool != nil {
 		ac.burstPool.UpdateUsage(projectID, memUsage)
+	}
+
+	// Broadcast stats in real-time
+	if ac.broadcaster != nil {
+		ac.broadcaster.BroadcastStats(projectID, map[string]interface{}{
+			"service_name":   serviceName,
+			"cpu_usage":      cpuPercent,
+			"memory_usage":   memUsage,
+			"memory_limit":   memLimit,
+			"network_rx":     netRx,
+			"network_tx":     netTx,
+			"disk_read":      diskRead,
+			"disk_write":     diskWrite,
+			"container_status": "running",
+			"timestamp":      time.Now().Unix(),
+		})
 	}
 }
 

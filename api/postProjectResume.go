@@ -34,6 +34,7 @@ func (a *Api) postProjectResume(c *gin.Context) {
 	}); err != nil {
 		a.logger.Error(fmt.Sprintf("Failed to update status to COMING_UP: %v", err))
 	}
+	a.wsHub.BroadcastStatus(projectRef, "COMING_UP")
 
 	// Resume via provisioner asynchronously
 	if a.provisioner != nil {
@@ -47,6 +48,7 @@ func (a *Api) postProjectResume(c *gin.Context) {
 					ProjectRef: projectRef,
 					Status:     "PAUSED",
 				})
+				a.wsHub.BroadcastStatus(projectRef, "PAUSED")
 				return
 			}
 
@@ -54,6 +56,7 @@ func (a *Api) postProjectResume(c *gin.Context) {
 				ProjectRef: projectRef,
 				Status:     "ACTIVE_HEALTHY",
 			})
+			a.wsHub.BroadcastStatus(projectRef, "ACTIVE_HEALTHY")
 			a.logger.Info(fmt.Sprintf("Project %s resumed successfully", projectRef))
 		}()
 	} else {

@@ -34,6 +34,7 @@ func (a *Api) postProjectPause(c *gin.Context) {
 	}); err != nil {
 		a.logger.Error(fmt.Sprintf("Failed to update status to PAUSING: %v", err))
 	}
+	a.wsHub.BroadcastStatus(projectRef, "PAUSING")
 
 	// Pause via provisioner asynchronously
 	if a.provisioner != nil {
@@ -47,6 +48,7 @@ func (a *Api) postProjectPause(c *gin.Context) {
 					ProjectRef: projectRef,
 					Status:     "ACTIVE_HEALTHY",
 				})
+				a.wsHub.BroadcastStatus(projectRef, "ACTIVE_HEALTHY")
 				return
 			}
 
@@ -54,6 +56,7 @@ func (a *Api) postProjectPause(c *gin.Context) {
 				ProjectRef: projectRef,
 				Status:     "PAUSED",
 			})
+			a.wsHub.BroadcastStatus(projectRef, "PAUSED")
 			a.logger.Info(fmt.Sprintf("Project %s paused successfully", projectRef))
 		}()
 	} else {

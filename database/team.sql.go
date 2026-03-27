@@ -12,7 +12,7 @@ import (
 )
 
 const getOrganizationMembers = `-- name: GetOrganizationMembers :many
-SELECT a.id, a.email, a.username, a.first_name, a.last_name, om.role, om.created_at
+SELECT a.id, a.gotrue_id, a.email, a.username, a.first_name, a.last_name, om.role, om.created_at
 FROM organization_membership om
 JOIN accounts a ON om.account_id = a.id
 WHERE om.organization_id = $1
@@ -20,6 +20,7 @@ WHERE om.organization_id = $1
 
 type GetOrganizationMembersRow struct {
 	ID        int32
+	GotrueID  string
 	Email     string
 	Username  string
 	FirstName pgtype.Text
@@ -39,6 +40,7 @@ func (q *Queries) GetOrganizationMembers(ctx context.Context, organizationID int
 		var i GetOrganizationMembersRow
 		if err := rows.Scan(
 			&i.ID,
+			&i.GotrueID,
 			&i.Email,
 			&i.Username,
 			&i.FirstName,

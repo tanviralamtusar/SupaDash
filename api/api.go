@@ -27,6 +27,7 @@ type Api struct {
 	provisioner     provisioner.Provisioner
 	resourceManager *provisioner.ResourceManager
 	burstPool       *provisioner.BurstPoolManager
+	wsHub           *WsHub
 }
 
 func CreateApi(logger *slog.Logger, config *conf.Config) (*Api, error) {
@@ -47,6 +48,11 @@ func CreateApi(logger *slog.Logger, config *conf.Config) (*Api, error) {
 		logger.Error(fmt.Sprintf("Failed to run migrations: %v", err))
 		return nil, err
 	}
+
+	// Initialize WebSocket Hub
+	wsHub := NewWsHub(logger)
+	go wsHub.Run()
+	logger.Info("WebSocket Hub initialized and running")
 
 	// Initialize provisioner if enabled
 	var prov provisioner.Provisioner
@@ -71,13 +77,15 @@ func CreateApi(logger *slog.Logger, config *conf.Config) (*Api, error) {
 			burstMgr = provisioner.NewBurstPoolManager(logger, 8*1024*1024*1024) // 8GB default
 
 			// Start analysis collector in the background
-			collector := provisioner.NewAnalysisCollector(logger, queries, dockerProv, burstMgr)
+			collector := provisioner.NewAnalysisCollector(logger, queries, dockerProv, burstMgr, wsHub)
 			go collector.Run(context.Background())
 			logger.Info("Analysis collector started")
 		}
 	} else {
 		logger.Info("Provisioner is disabled")
 	}
+
+	// Finalization
 
 	return &Api{
 		logger:          logger,
@@ -88,6 +96,7 @@ func CreateApi(logger *slog.Logger, config *conf.Config) (*Api, error) {
 		provisioner:     prov,
 		resourceManager: resMgr,
 		burstPool:       burstMgr,
+		wsHub:           wsHub,
 	}, nil
 }
 
@@ -172,6 +181,7 @@ func (a *Api) Router() *gin.Engine {
 
 	r.GET("/", a.index)
 	r.GET("/status", a.status)
+	r.GET("/ws", a.wsHandler)
 
 	profile := r.Group("/profile")
 	{

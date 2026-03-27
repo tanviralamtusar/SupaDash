@@ -84,6 +84,10 @@
 | SECURITY.md | ✅ Done | `SECURITY.md` |
 | CONTRIBUTING.md | ✅ Done | `CONTRIBUTING.md` |
 | Deployed to Coolify | ✅ Done | `supadash.botbhai.net` |
+| **Phase 7: Studio Platform Integration** | ✅ Done | Forked Supabase Studio, patched API urls, stripped cloud UI |
+| **Phase 8: Real-time Infrastructure** | ✅ Done | Gorilla WebSocket Hub, project status broadcasting, `useRealtime` hook |
+| **Phase 9: Branding & Polish** | ✅ Done | Final audit: Logos, metadata, error pages, log templates |
+| **Phase 10: Production Persistence** | ✅ Done | Migrated all custom Studio branding to the `studio/files` overlay system for stable self-hosting. |
 
 ---
 
@@ -96,8 +100,6 @@
 | **Helm chart for Kubernetes** | Phase 6.2 | Not needed for current single-server deployment | Medium |
 | **Grafana dashboards** | Phase 6.3 | Prometheus endpoint exists but no pre-built dashboard JSON | Easy |
 | **Alerting (Slack/Discord/email)** | Phase 6.4 | No webhook integration built | Medium |
-| **Landing page / demo** | Phase 6.7 | No frontend landing page created | Medium |
-| **Frontend (SupaConsole) integration** | Phase 2 | SupaConsole exists but not connected to SupaDash API | Hard |
 | **E2E tests** | Phase 5.6 | No Studio → create project → verify flow test | Hard |
 | **Integration tests (DB-dependent)** | Phase 5.4 | Auth, team, audit, secrets API tests need a test DB | Medium |
 | **Full lifecycle integration test** | Phase 5.5 | Create → configure → pause → resume → delete test | Medium |
@@ -132,6 +134,7 @@
 | **CLI tool** | `supadash` CLI for managing projects from terminal |
 | **Plugin system** | Extensible hooks for custom provisioning logic |
 | **Multi-region** | Deploy projects to different geographic regions |
+| **Landing Page** | High-conversion marketing landing page |
 
 ---
 
@@ -152,14 +155,15 @@
 | Integrations | 3 |
 | Server | 2 |
 | Misc (ConfigCat, Props) | 3 |
-| **Total** | **~63** |
+| WebSocket (Real-time) | 5 |
+| **Total** | **~68** |
 
 ---
 
-## Tech Stack
-
 | Layer | Technology |
 |-------|-----------|
+| Frontend | React 18, Next.js 14, Tailwind v4 (Studio Fork) |
+| Core | Go 1.25 (Gin Framework) |
 | Language | Go 1.25 |
 | Web framework | Gin |
 | Database | PostgreSQL 15 |

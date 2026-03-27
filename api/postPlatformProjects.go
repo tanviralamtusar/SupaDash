@@ -94,6 +94,9 @@ func (a *Api) postPlatformProjects(c *gin.Context) {
 		return
 	}
 
+	// Broadcast initial project status
+	a.wsHub.BroadcastStatus(projectRef, proj.Status)
+
 	// Update project with generated keys immediately
 	if _, updateErr := a.queries.UpdateProjectInfrastructure(c.Request.Context(), database.UpdateProjectInfrastructureParams{
 		ProjectRef:     proj.ProjectRef,
@@ -137,6 +140,7 @@ func (a *Api) postPlatformProjects(c *gin.Context) {
 				}); statusErr != nil {
 					a.logger.Error(fmt.Sprintf("Failed to update status to FAILED: %v", statusErr))
 				}
+				a.wsHub.BroadcastStatus(proj.ProjectRef, "FAILED")
 				return
 			}
 
@@ -158,6 +162,7 @@ func (a *Api) postPlatformProjects(c *gin.Context) {
 			}); statusErr != nil {
 				a.logger.Error(fmt.Sprintf("Failed to update status to ACTIVE: %v", statusErr))
 			}
+			a.wsHub.BroadcastStatus(proj.ProjectRef, "ACTIVE_HEALTHY")
 
 			a.logger.Info(fmt.Sprintf("Provisioning completed for project %s — API: %s", proj.ProjectRef, info.Endpoint))
 		}()

@@ -29,6 +29,7 @@ func (a *Api) deleteProject(c *gin.Context) {
 	}); err != nil {
 		a.logger.Error(fmt.Sprintf("Failed to update status to GOING_DOWN: %v", err))
 	}
+	a.wsHub.BroadcastStatus(projectRef, "GOING_DOWN")
 
 	// Delete via provisioner + clean up DB asynchronously
 	go func() {

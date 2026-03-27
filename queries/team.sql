@@ -1,5 +1,5 @@
 -- name: GetOrganizationMembers :many
-SELECT a.id, a.email, a.username, a.first_name, a.last_name, om.role, om.created_at
+SELECT a.id, a.gotrue_id, a.email, a.username, a.first_name, a.last_name, om.role, om.created_at
 FROM organization_membership om
 JOIN accounts a ON om.account_id = a.id
 WHERE om.organization_id = $1;
