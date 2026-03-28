@@ -1,41 +1,22 @@
-# Binaries
+﻿# Dependencies
+**/node_modules/
+.pnpm-store/
+
+# Build artifacts
+studio/.build/
+dist/
+.next/
+out/
+build/
+.turbo/
+.vercel
+.output/
+
+# Misc
+.DS_Store
+Thumbs.db
 *.exe
-*.exe~
 *.dll
 *.so
 *.dylib
 supadash
-
-# Test output
-*.log
-*.out
-cover.out
-*.test
-
-# Build artifacts
-build_*.txt
-test_*.txt
-sqlc_*.txt
-push_out.txt
-
-# Environment
-.env
-!.env.example
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-.agent/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Projects data (created at runtime)
-projects/
-backups/
-
-# Studio build artifacts
-studio/.build/

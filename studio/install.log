@@ -1,0 +1,654 @@
+Scope: all 16 workspace projects
+Progress: resolved 0, reused 1, downloaded 0, added 0
+packages/ui                              |  WARN  deprecated glob@8.1.0
+ WARN  deprecated @types/markdown-table@3.0.0: This is a stub types definition. markdown-table provides its own type definitions, so you do not need this installed.
+packages/ui-patterns                     |  WARN  deprecated mdast@3.0.0
+Progress: resolved 172, reused 171, downloaded 0, added 0
+Progress: resolved 187, reused 186, downloaded 0, added 0
+Progress: resolved 211, reused 208, downloaded 0, added 0
+Progress: resolved 225, reused 222, downloaded 0, added 0
+ WARN  deprecated react-beautiful-dnd@13.1.1: react-beautiful-dnd is now deprecated. Context and options: https://github.com/atlassian/react-beautiful-dnd/issues/2672
+Progress: resolved 253, reused 248, downloaded 0, added 0
+Progress: resolved 273, reused 265, downloaded 0, added 0
+Progress: resolved 275, reused 271, downloaded 0, added 0
+Progress: resolved 275, reused 272, downloaded 0, added 0
+Progress: resolved 276, reused 272, downloaded 0, added 0
+ WARN  Request took 10273ms: https://registry.npmjs.org/@next%2Fbundle-analyzer
+Progress: resolved 277, reused 273, downloaded 0, added 0
+Progress: resolved 277, reused 274, downloaded 0, added 0
+Progress: resolved 277, reused 275, downloaded 0, added 0
+Progress: resolved 278, reused 277, downloaded 0, added 0
+Progress: resolved 278, reused 277, downloaded 1, added 0
+Progress: resolved 305, reused 296, downloaded 1, added 0
+Progress: resolved 342, reused 327, downloaded 1, added 0
+Progress: resolved 374, reused 355, downloaded 1, added 0
+ WARN  Tarball download average speed 21 KiB/s (size 29 KiB) is below 50 KiB/s: https://registry.npmjs.org/micromark/-/micromark-4.0.0.tgz (GET)
+Progress: resolved 396, reused 374, downloaded 1, added 0
+Progress: resolved 410, reused 384, downloaded 1, added 0
+Progress: resolved 413, reused 386, downloaded 1, added 0
+Progress: resolved 424, reused 392, downloaded 1, added 0
+Progress: resolved 436, reused 396, downloaded 1, added 0
+Progress: resolved 455, reused 409, downloaded 1, added 0
+Progress: resolved 489, reused 442, downloaded 1, added 0
+Progress: resolved 506, reused 455, downloaded 1, added 0
+ WARN  Tarball download average speed 26 KiB/s (size 41 KiB) is below 50 KiB/s: https://registry.npmjs.org/postcss-selector-parser/-/postcss-selector-parser-6.0.10.tgz (GET)
+ WARN  Request took 11442ms: https://registry.npmjs.org/@graphql-tools%2Fjson-file-loader
+Progress: resolved 529, reused 469, downloaded 1, added 0
+ WARN  Request took 12306ms: https://registry.npmjs.org/@graphql-tools%2Fapollo-engine-loader
+Progress: resolved 562, reused 495, downloaded 1, added 0
+Progress: resolved 600, reused 524, downloaded 1, added 0
+ WARN  Request took 14891ms: https://registry.npmjs.org/@graphql-tools%2Fload
+Progress: resolved 643, reused 562, downloaded 1, added 0
+Progress: resolved 661, reused 573, downloaded 1, added 0
+ WARN  Request took 16065ms: https://registry.npmjs.org/@graphql-tools%2Fgithub-loader
+ WARN  Request took 16551ms: https://registry.npmjs.org/@graphql-tools%2Fprisma-loader
+Progress: resolved 685, reused 581, downloaded 1, added 0
+ WARN  Request took 17286ms: https://registry.npmjs.org/log-symbols
+Progress: resolved 717, reused 589, downloaded 1, added 0
+ WARN  Request took 18654ms: https://registry.npmjs.org/yaml
+ WARN  Request took 16123ms: https://registry.npmjs.org/@types%2Fnode
+Progress: resolved 741, reused 595, downloaded 1, added 0
+Progress: resolved 760, reused 614, downloaded 1, added 0
+ WARN  Request took 20251ms: https://registry.npmjs.org/@graphql-tools%2Fgraphql-file-loader
+Progress: resolved 783, reused 634, downloaded 2, added 0
+Progress: resolved 820, reused 655, downloaded 3, added 0
+Progress: resolved 840, reused 675, downloaded 5, added 0
+Progress: resolved 855, reused 702, downloaded 5, added 0
+ WARN  Request took 24756ms: https://registry.npmjs.org/@graphql-tools%2Fgit-loader
+Progress: resolved 895, reused 746, downloaded 8, added 0
+ WARN  Request took 25997ms: https://registry.npmjs.org/@graphql-codegen%2Fclient-preset
+Progress: resolved 958, reused 829, downloaded 11, added 0
+ WARN  Tarball download average speed 37 KiB/s (size 50 KiB) is below 50 KiB/s: https://registry.npmjs.org/source-map/-/source-map-0.7.6.tgz (GET)
+Progress: resolved 968, reused 834, downloaded 11, added 0
+ WARN  Request took 27648ms: https://registry.npmjs.org/@graphql-tools%2Fcode-file-loader
+Progress: resolved 982, reused 844, downloaded 11, added 0
+Progress: resolved 1006, reused 852, downloaded 11, added 0
+Progress: resolved 1015, reused 868, downloaded 11, added 0
+Progress: resolved 1059, reused 886, downloaded 11, added 0
+Progress: resolved 1085, reused 901, downloaded 12, added 0
+Progress: resolved 1088, reused 905, downloaded 12, added 0
+ WARN  Tarball download average speed 33 KiB/s (size 229 KiB) is below 50 KiB/s: https://registry.npmjs.org/es-abstract/-/es-abstract-1.24.0.tgz (GET)
+ WARN  Request took 33792ms: https://registry.npmjs.org/@graphql-tools%2Futils
+Progress: resolved 1135, reused 911, downloaded 12, added 0
+Progress: resolved 1157, reused 914, downloaded 12, added 0
+Progress: resolved 1173, reused 926, downloaded 12, added 0
+ WARN  Request took 13443ms: https://registry.npmjs.org/react-refresh
+ WARN  Request took 36682ms: https://registry.npmjs.org/@graphql-codegen%2Fplugin-helpers
+Progress: resolved 1177, reused 932, downloaded 12, added 0
+ WARN  Request took 29419ms: https://registry.npmjs.org/@next%2Fenv
+Progress: resolved 1186, reused 954, downloaded 13, added 0
+Progress: resolved 1194, reused 972, downloaded 13, added 0
+Progress: resolved 1211, reused 998, downloaded 16, added 0
+Progress: resolved 1212, reused 1012, downloaded 16, added 0
+Progress: resolved 1212, reused 1024, downloaded 16, added 0
+ WARN  Request took 42209ms: https://registry.npmjs.org/@graphql-tools%2Furl-loader
+Progress: resolved 1213, reused 1029, downloaded 16, added 0
+Progress: resolved 1215, reused 1040, downloaded 17, added 0
+Progress: resolved 1230, reused 1061, downloaded 17, added 0
+ WARN  Request took 14799ms: https://registry.npmjs.org/react-is
+Progress: resolved 1238, reused 1068, downloaded 17, added 0
+Progress: resolved 1250, reused 1080, downloaded 17, added 0
+Progress: resolved 1276, reused 1109, downloaded 17, added 0
+ WARN  Request took 48295ms: https://registry.npmjs.org/@graphql-codegen%2Fcore
+Progress: resolved 1282, reused 1120, downloaded 17, added 0
+Progress: resolved 1298, reused 1145, downloaded 18, added 0
+Progress: resolved 1311, reused 1155, downloaded 25, added 0
+Progress: resolved 1324, reused 1171, downloaded 29, added 0
+ WARN  Tarball download average speed 6 KiB/s (size 10 KiB) is below 50 KiB/s: https://registry.npmjs.org/micromark-util-types/-/micromark-util-types-1.1.0.tgz (GET)
+Progress: resolved 1328, reused 1181, downloaded 30, added 0
+ WARN  Tarball download average speed 6 KiB/s (size 9 KiB) is below 50 KiB/s: https://registry.npmjs.org/fastq/-/fastq-1.18.0.tgz (GET)
+Progress: resolved 1328, reused 1189, downloaded 30, added 0
+Progress: resolved 1328, reused 1193, downloaded 30, added 0
+Progress: resolved 1328, reused 1197, downloaded 30, added 0
+Progress: resolved 1328, reused 1208, downloaded 30, added 0
+Progress: resolved 1328, reused 1215, downloaded 30, added 0
+Progress: resolved 1332, reused 1224, downloaded 31, added 0
+Progress: resolved 1351, reused 1242, downloaded 38, added 0
+Progress: resolved 1419, reused 1306, downloaded 46, added 0
+ WARN  Tarball download average speed 3 KiB/s (size 4 KiB) is below 50 KiB/s: https://registry.npmjs.org/@types/d3-delaunay/-/d3-delaunay-6.0.4.tgz (GET)
+ WARN  Tarball download average speed 3 KiB/s (size 4 KiB) is below 50 KiB/s: https://registry.npmjs.org/@types/d3-format/-/d3-format-3.0.4.tgz (GET)
+Progress: resolved 1482, reused 1346, downloaded 74, added 0
+ WARN  Tarball download average speed 10 KiB/s (size 13 KiB) is below 50 KiB/s: https://registry.npmjs.org/d3-brush/-/d3-brush-3.0.0.tgz (GET)
+Progress: resolved 1493, reused 1346, downloaded 85, added 0
+ WARN  Tarball download average speed 5 KiB/s (size 5 KiB) is below 50 KiB/s: https://registry.npmjs.org/points-on-curve/-/points-on-curve-0.2.0.tgz (GET)
+ WARN  Tarball download average speed 3 KiB/s (size 3 KiB) is below 50 KiB/s: https://registry.npmjs.org/points-on-path/-/points-on-path-0.2.1.tgz (GET)
+ WARN  Tarball download average speed 8 KiB/s (size 8 KiB) is below 50 KiB/s: https://registry.npmjs.org/error-stack-parser/-/error-stack-parser-2.1.4.tgz (GET)
+Progress: resolved 1505, reused 1347, downloaded 97, added 0
+ WARN  Tarball download average speed 24 KiB/s (size 32 KiB) is below 50 KiB/s: https://registry.npmjs.org/@aws-sdk/client-sso/-/client-sso-3.830.0.tgz (GET)
+ WARN  Tarball download average speed 11 KiB/s (size 12 KiB) is below 50 KiB/s: https://registry.npmjs.org/@antfu/utils/-/utils-9.2.1.tgz (GET)
+ WARN  Tarball download average speed 4 KiB/s (size 10 KiB) is below 50 KiB/s: https://registry.npmjs.org/d3-quadtree/-/d3-quadtree-3.0.1.tgz (GET)
+ WARN  Tarball download average speed 5 KiB/s (size 8 KiB) is below 50 KiB/s: https://registry.npmjs.org/kolorist/-/kolorist-1.8.0.tgz (GET)
+Progress: resolved 1511, reused 1347, downloaded 103, added 0
+ WARN  Tarball download average speed 11 KiB/s (size 36 KiB) is below 50 KiB/s: https://registry.npmjs.org/d3-hierarchy/-/d3-hierarchy-3.1.2.tgz (GET)
+ WARN  Tarball download average speed 19 KiB/s (size 44 KiB) is below 50 KiB/s: https://registry.npmjs.org/stacktrace-gps/-/stacktrace-gps-3.1.2.tgz (GET)
+ WARN  Tarball download average speed 29 KiB/s (size 58 KiB) is below 50 KiB/s: https://registry.npmjs.org/@opentelemetry/otlp-exporter-base/-/otlp-exporter-base-0.208.0.tgz (GET)
+ WARN  Tarball download average speed 31 KiB/s (size 68 KiB) is below 50 KiB/s: https://registry.npmjs.org/@opentelemetry/core/-/core-2.2.0.tgz (GET)
+ WARN  Tarball download average speed 32 KiB/s (size 77 KiB) is below 50 KiB/s: https://registry.npmjs.org/mdn-data/-/mdn-data-2.0.14.tgz (GET)
+ WARN  Tarball download average speed 2 KiB/s (size 12 KiB) is below 50 KiB/s: https://registry.npmjs.org/@types/d3-selection/-/d3-selection-3.0.10.tgz (GET)
+ WARN  Tarball download average speed 1 KiB/s (size 7 KiB) is below 50 KiB/s: https://registry.npmjs.org/d3-axis/-/d3-axis-3.0.0.tgz (GET)
+ WARN  Tarball download average speed 1 KiB/s (size 8 KiB) is below 50 KiB/s: https://registry.npmjs.org/d3-chord/-/d3-chord-3.0.1.tgz (GET)
+ WARN  Tarball download average speed 0 KiB/s (size 4 KiB) is below 50 KiB/s: https://registry.npmjs.org/local-pkg/-/local-pkg-1.1.2.tgz (GET)
+ WARN  Tarball download average speed 9 KiB/s (size 46 KiB) is below 50 KiB/s: https://registry.npmjs.org/d3-shape/-/d3-shape-1.3.7.tgz (GET)
+ WARN  Tarball download average speed 44 KiB/s (size 102 KiB) is below 50 KiB/s: https://registry.npmjs.org/mark.js/-/mark.js-8.11.1.tgz (GET)
+Progress: resolved 1511, reused 1348, downloaded 103, added 0
+ WARN  Tarball download average speed 0 KiB/s (size 3 KiB) is below 50 KiB/s: https://registry.npmjs.org/@types/d3-quadtree/-/d3-quadtree-3.0.6.tgz (GET)
+Progress: resolved 1511, reused 1348, downloaded 104, added 0
+Progress: resolved 1528, reused 1348, downloaded 121, added 0
+Progress: resolved 1546, reused 1351, downloaded 137, added 0
+Progress: resolved 1550, reused 1353, downloaded 138, added 0
+ WARN  Tarball download average speed 47 KiB/s (size 70 KiB) is below 50 KiB/s: https://registry.npmjs.org/@opentelemetry/sdk-trace-base/-/sdk-trace-base-2.2.0.tgz (GET)
+ WARN  Tarball download average speed 46 KiB/s (size 165 KiB) is below 50 KiB/s: https://registry.npmjs.org/mobx-react/-/mobx-react-9.2.0.tgz (GET)
+Progress: resolved 1563, reused 1362, downloaded 141, added 0
+ WARN  Tarball download average speed 4 KiB/s (size 10 KiB) is below 50 KiB/s: https://registry.npmjs.org/sade/-/sade-1.8.1.tgz (GET)
+ WARN  Tarball download average speed 3 KiB/s (size 6 KiB) is below 50 KiB/s: https://registry.npmjs.org/stackframe/-/stackframe-1.3.4.tgz (GET)
+ WARN  Tarball download average speed 36 KiB/s (size 123 KiB) is below 50 KiB/s: https://registry.npmjs.org/diff/-/diff-5.2.2.tgz (GET)
+Progress: resolved 1585, reused 1367, downloaded 151, added 0
+ WARN  Tarball download average speed 2 KiB/s (size 2 KiB) is below 50 KiB/s: https://registry.npmjs.org/micromark-util-html-tag-name/-/micromark-util-html-tag-name-2.0.0.tgz (GET)
+ WARN  Tarball download average speed 1 KiB/s (size 7 KiB) is below 50 KiB/s: https://registry.npmjs.org/any-promise/-/any-promise-1.3.0.tgz (GET)
+Progress: resolved 1608, reused 1376, downloaded 163, added 0
+Progress: resolved 1621, reused 1389, downloaded 164, added 0
+ WARN  Tarball download average speed 41 KiB/s (size 67 KiB) is below 50 KiB/s: https://registry.npmjs.org/@motionone/dom/-/dom-10.12.0.tgz (GET)
+ WARN  Tarball download average speed 25 KiB/s (size 31 KiB) is below 50 KiB/s: https://registry.npmjs.org/vscode-languageserver/-/vscode-languageserver-9.0.1.tgz (GET)
+ WARN  Tarball download average speed 0 KiB/s (size 10 KiB) is below 50 KiB/s: https://registry.npmjs.org/d3-drag/-/d3-drag-3.0.0.tgz (GET)
+Progress: resolved 1631, reused 1391, downloaded 164, added 0
+Progress: resolved 1641, reused 1391, downloaded 164, added 0
+Progress: resolved 1653, reused 1391, downloaded 164, added 0
+Progress: resolved 1678, reused 1391, downloaded 164, added 0
+Progress: resolved 1713, reused 1391, downloaded 164, added 0
+Progress: resolved 1717, reused 1391, downloaded 164, added 0
+Progress: resolved 1724, reused 1391, downloaded 164, added 0
+Progress: resolved 1760, reused 1391, downloaded 164, added 0
+Progress: resolved 1777, reused 1403, downloaded 182, added 0
+Progress: resolved 1795, reused 1419, downloaded 188, added 0
+ WARN  Tarball download average speed 5 KiB/s (size 8 KiB) is below 50 KiB/s: https://registry.npmjs.org/@types/react-redux/-/react-redux-7.1.27.tgz (GET)
+Progress: resolved 1798, reused 1419, downloaded 208, added 0
+ WARN  Tarball download average speed 5 KiB/s (size 7 KiB) is below 50 KiB/s: https://registry.npmjs.org/@opentelemetry/instrumentation-lru-memoizer/-/instrumentation-lru-memoizer-0.53.0.tgz (GET)
+ WARN  Tarball download average speed 5 KiB/s (size 14 KiB) is below 50 KiB/s: https://registry.npmjs.org/@opentelemetry/instrumentation-koa/-/instrumentation-koa-0.57.0.tgz (GET)
+ WARN  Tarball download average speed 8 KiB/s (size 20 KiB) is below 50 KiB/s: https://registry.npmjs.org/@opentelemetry/instrumentation-hapi/-/instrumentation-hapi-0.55.0.tgz (GET)
+ WARN  Tarball download average speed 6 KiB/s (size 17 KiB) is below 50 KiB/s: https://registry.npmjs.org/@opentelemetry/instrumentation-knex/-/instrumentation-knex-0.53.0.tgz (GET)
+Progress: resolved 1799, reused 1419, downloaded 208, added 0
+ WARN  Tarball download average speed 11 KiB/s (size 36 KiB) is below 50 KiB/s: https://registry.npmjs.org/@opentelemetry/instrumentation-pg/-/instrumentation-pg-0.61.0.tgz (GET)
+ WARN  Request took 94763ms: https://registry.npmjs.org/@whatwg-node%2Ffetch
+Progress: resolved 1800, reused 1419, downloaded 208, added 0
+ WARN  Request took 17747ms: https://registry.npmjs.org/@prisma%2Finstrumentation
+Progress: resolved 1801, reused 1419, downloaded 208, added 0
+Progress: resolved 1803, reused 1420, downloaded 232, added 0
+Progress: resolved 1806, reused 1421, downloaded 242, added 0
+ WARN  Tarball download average speed 17 KiB/s (size 24 KiB) is below 50 KiB/s: https://registry.npmjs.org/resolve/-/resolve-2.0.0-next.5.tgz (GET)
+ WARN  Tarball download average speed 20 KiB/s (size 31 KiB) is below 50 KiB/s: https://registry.npmjs.org/d3-array/-/d3-array-2.12.1.tgz (GET)
+Progress: resolved 1810, reused 1421, downloaded 254, added 0
+ WARN  Tarball download average speed 8 KiB/s (size 8 KiB) is below 50 KiB/s: https://registry.npmjs.org/@chevrotain/cst-dts-gen/-/cst-dts-gen-11.0.3.tgz (GET)
+ WARN  Tarball download average speed 15 KiB/s (size 21 KiB) is below 50 KiB/s: https://registry.npmjs.org/@shikijs/core/-/core-3.13.0.tgz (GET)
+Progress: resolved 1822, reused 1421, downloaded 271, added 0
+ WARN  Tarball download average speed 1 KiB/s (size 5 KiB) is below 50 KiB/s: https://registry.npmjs.org/quansync/-/quansync-0.2.11.tgz (GET)
+ WARN  Tarball download average speed 15 KiB/s (size 19 KiB) is below 50 KiB/s: https://registry.npmjs.org/@chevrotain/regexp-to-ast/-/regexp-to-ast-11.0.3.tgz (GET)
+Progress: resolved 1831, reused 1426, downloaded 275, added 0
+ WARN  Tarball download average speed 4 KiB/s (size 20 KiB) is below 50 KiB/s: https://registry.npmjs.org/@sentry/cli/-/cli-2.58.2.tgz (GET)
+Progress: resolved 1858, reused 1450, downloaded 279, added 0
+Progress: resolved 1869, reused 1454, downloaded 289, added 0
+ WARN  Tarball download average speed 1 KiB/s (size 2 KiB) is below 50 KiB/s: https://registry.npmjs.org/@protobufjs/path/-/path-1.1.2.tgz (GET)
+Progress: resolved 1890, reused 1465, downloaded 299, added 0
+ WARN  Tarball download average speed 41 KiB/s (size 84 KiB) is below 50 KiB/s: https://registry.npmjs.org/mobx-react-lite/-/mobx-react-lite-4.1.0.tgz (GET)
+Progress: resolved 1901, reused 1468, downloaded 300, added 0
+Progress: resolved 1910, reused 1468, downloaded 300, added 0
+Progress: resolved 1914, reused 1468, downloaded 300, added 0
+Progress: resolved 1918, reused 1468, downloaded 300, added 0
+ WARN  Tarball download average speed 5 KiB/s (size 57 KiB) is below 50 KiB/s: https://registry.npmjs.org/vscode-languageserver-protocol/-/vscode-languageserver-protocol-3.17.5.tgz (GET)
+Progress: resolved 1920, reused 1468, downloaded 300, added 0
+ WARN  Tarball download average speed 1 KiB/s (size 11 KiB) is below 50 KiB/s: https://registry.npmjs.org/@chevrotain/gast/-/gast-11.0.3.tgz (GET)
+Progress: resolved 1921, reused 1468, downloaded 300, added 0
+Progress: resolved 1921, reused 1468, downloaded 301, added 0
+ WARN  Request took 10185ms: https://registry.npmjs.org/figures
+Progress: resolved 1943, reused 1503, downloaded 314, added 0
+Progress: resolved 1948, reused 1506, downloaded 315, added 0
+ WARN  Tarball download average speed 2 KiB/s (size 3 KiB) is below 50 KiB/s: https://registry.npmjs.org/is-alphabetical/-/is-alphabetical-2.0.1.tgz (GET)
+Progress: resolved 1953, reused 1509, downloaded 318, added 0
+Progress: resolved 1961, reused 1515, downloaded 319, added 0
+Progress: resolved 1966, reused 1520, downloaded 321, added 0
+Progress: resolved 1970, reused 1524, downloaded 321, added 0
+Progress: resolved 1975, reused 1528, downloaded 321, added 0
+Progress: resolved 2001, reused 1551, downloaded 326, added 0
+Progress: resolved 2018, reused 1567, downloaded 326, added 0
+Progress: resolved 2035, reused 1584, downloaded 326, added 0
+Progress: resolved 2051, reused 1598, downloaded 326, added 0
+ WARN  Request took 10012ms: https://registry.npmjs.org/@mapbox%2Fnode-pre-gyp
+Progress: resolved 2057, reused 1599, downloaded 326, added 0
+ WARN  Tarball download average speed 45 KiB/s (size 49 KiB) is below 50 KiB/s: https://registry.npmjs.org/tldts-core/-/tldts-core-7.0.16.tgz (GET)
+Progress: resolved 2059, reused 1599, downloaded 326, added 0
+Progress: resolved 2062, reused 1599, downloaded 326, added 0
+Progress: resolved 2075, reused 1599, downloaded 326, added 0
+ WARN  Tarball download average speed 46 KiB/s (size 166 KiB) is below 50 KiB/s: https://registry.npmjs.org/@sentry-internal/replay-canvas/-/replay-canvas-10.27.0.tgz (GET)
+Progress: resolved 2079, reused 1599, downloaded 326, added 0
+ WARN  Request took 23512ms: https://registry.npmjs.org/@graphql-tools%2Fschema
+ WARN  Request took 24569ms: https://registry.npmjs.org/@graphql-tools%2Fmerge
+Progress: resolved 2086, reused 1599, downloaded 326, added 0
+ WARN  Request took 22265ms: https://registry.npmjs.org/@graphql-codegen%2Ftyped-document-node
+Progress: resolved 2096, reused 1616, downloaded 333, added 0
+Progress: resolved 2104, reused 1618, downloaded 341, added 0
+ WARN  Request took 19342ms: https://registry.npmjs.org/@graphql-tools%2Fwrap
+Progress: resolved 2127, reused 1639, downloaded 353, added 0
+ WARN  Tarball download average speed 2 KiB/s (size 6 KiB) is below 50 KiB/s: https://registry.npmjs.org/hast-util-to-parse5/-/hast-util-to-parse5-8.0.0.tgz (GET)
+ WARN  Tarball download average speed 17 KiB/s (size 585 KiB) is below 50 KiB/s: https://registry.npmjs.org/axios/-/axios-1.13.5.tgz (GET)
+Progress: resolved 2131, reused 1643, downloaded 354, added 0
+ WARN  Request took 28929ms: https://registry.npmjs.org/@graphql-tools%2Fgraphql-tag-pluck
+Progress: resolved 2143, reused 1653, downloaded 357, added 0
+Progress: resolved 2155, reused 1662, downloaded 359, added 0
+ WARN  Tarball download average speed 1 KiB/s (size 9 KiB) is below 50 KiB/s: https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.15.11.tgz (GET)
+ WARN  Tarball download average speed 5 KiB/s (size 14 KiB) is below 50 KiB/s: https://registry.npmjs.org/pretty-format/-/pretty-format-29.7.0.tgz (GET)
+Progress: resolved 2181, reused 1677, downloaded 369, added 0
+ WARN  Tarball download average speed 44 KiB/s (size 84 KiB) is below 50 KiB/s: https://registry.npmjs.org/should/-/should-13.2.3.tgz (GET)
+Progress: resolved 2193, reused 1679, downloaded 371, added 0
+Progress: resolved 2195, reused 1681, downloaded 371, added 0
+Progress: resolved 2202, reused 1681, downloaded 371, added 0
+ WARN  Request took 34426ms: https://registry.npmjs.org/@graphql-tools%2Fexecutor-http
+Progress: resolved 2206, reused 1681, downloaded 371, added 0
+Progress: resolved 2210, reused 1681, downloaded 371, added 0
+Progress: resolved 2215, reused 1681, downloaded 371, added 0
+Progress: resolved 2226, reused 1682, downloaded 374, added 0
+Progress: resolved 2228, reused 1693, downloaded 388, added 0
+Progress: resolved 2232, reused 1694, downloaded 396, added 0
+ WARN  Tarball download average speed 2 KiB/s (size 3 KiB) is below 50 KiB/s: https://registry.npmjs.org/data-uri-to-buffer/-/data-uri-to-buffer-4.0.1.tgz (GET)
+Progress: resolved 2238, reused 1697, downloaded 403, added 0
+ WARN  Tarball download average speed 2 KiB/s (size 21 KiB) is below 50 KiB/s: https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz (GET)
+ WARN  Tarball download average speed 20 KiB/s (size 21 KiB) is below 50 KiB/s: https://registry.npmjs.org/smart-buffer/-/smart-buffer-4.2.0.tgz (GET)
+ WARN  Tarball download average speed 18 KiB/s (size 55 KiB) is below 50 KiB/s: https://registry.npmjs.org/graphql-ws/-/graphql-ws-6.0.4.tgz (GET)
+Progress: resolved 2246, reused 1699, downloaded 412, added 0
+Progress: resolved 2252, reused 1702, downloaded 415, added 0
+ WARN  Tarball download average speed 14 KiB/s (size 22 KiB) is below 50 KiB/s: https://registry.npmjs.org/chardet/-/chardet-2.1.1.tgz (GET)
+Progress: resolved 2260, reused 1706, downloaded 419, added 0
+Progress: resolved 2265, reused 1707, downloaded 424, added 0
+ WARN  Tarball download average speed 7 KiB/s (size 10 KiB) is below 50 KiB/s: https://registry.npmjs.org/is-generator-function/-/is-generator-function-1.0.10.tgz (GET)
+ WARN  Tarball download average speed 44 KiB/s (size 2151 KiB) is below 50 KiB/s: https://registry.npmjs.org/@faker-js/faker/-/faker-7.6.0.tgz (GET)
+Progress: resolved 2270, reused 1709, downloaded 429, added 0
+ WARN  Request took 15517ms: https://registry.npmjs.org/is-date-object
+Progress: resolved 2279, reused 1716, downloaded 434, added 0
+ WARN  Tarball download average speed 35 KiB/s (size 39 KiB) is below 50 KiB/s: https://registry.npmjs.org/robust-predicates/-/robust-predicates-3.0.2.tgz (GET)
+Progress: resolved 2290, reused 1721, downloaded 444, added 0
+Progress: resolved 2291, reused 1721, downloaded 445, added 0
+ WARN  Request took 20350ms: https://registry.npmjs.org/@types%2Fnode
+ WARN  Request took 45733ms: https://registry.npmjs.org/@graphql-codegen%2Fvisitor-plugin-common
+Progress: resolved 2292, reused 1721, downloaded 445, added 0
+Progress: resolved 2292, reused 1722, downloaded 445, added 0
+ WARN  Request took 13263ms: https://registry.npmjs.org/@sinclair%2Ftypebox
+Progress: resolved 2293, reused 1722, downloaded 445, added 0
+ WARN  Request took 18758ms: https://registry.npmjs.org/@envelop%2Fcore
+Progress: resolved 2294, reused 1722, downloaded 445, added 0
+Progress: resolved 2295, reused 1722, downloaded 445, added 0
+Progress: resolved 2295, reused 1722, downloaded 446, added 0
+ WARN  Tarball download average speed 17 KiB/s (size 57 KiB) is below 50 KiB/s: https://registry.npmjs.org/@sinclair/typebox/-/typebox-0.27.8.tgz (GET)
+Progress: resolved 2296, reused 1722, downloaded 448, added 0
+ WARN  Request took 60462ms: https://registry.npmjs.org/@graphql-codegen%2Fadd
+Progress: resolved 2297, reused 1723, downloaded 451, added 0
+ WARN  Request took 31230ms: https://registry.npmjs.org/@graphql-tools%2Fdelegate
+Progress: resolved 2298, reused 1723, downloaded 451, added 0
+ WARN  Request took 65884ms: https://registry.npmjs.org/@graphql-codegen%2Ftypescript
+Progress: resolved 2300, reused 1723, downloaded 451, added 0
+ WARN  Request took 31429ms: https://registry.npmjs.org/electron-to-chromium
+Progress: resolved 2301, reused 1723, downloaded 451, added 0
+Progress: resolved 2302, reused 1725, downloaded 452, added 0
+Progress: resolved 2302, reused 1725, downloaded 454, added 0
+Progress: resolved 2303, reused 1725, downloaded 455, added 0
+ WARN  Tarball download average speed 43 KiB/s (size 1284 KiB) is below 50 KiB/s: https://registry.npmjs.org/web-streams-polyfill/-/web-streams-polyfill-3.2.1.tgz (GET)
+Progress: resolved 2303, reused 1725, downloaded 456, added 0
+ WARN  Request took 71320ms: https://registry.npmjs.org/@graphql-codegen%2Ftypescript-operations
+Progress: resolved 2307, reused 1729, downloaded 457, added 0
+Progress: resolved 2310, reused 1732, downloaded 457, added 0
+Progress: resolved 2311, reused 1733, downloaded 457, added 0
+Progress: resolved 2312, reused 1733, downloaded 457, added 0
+Progress: resolved 2312, reused 1734, downloaded 457, added 0
+Progress: resolved 2312, reused 1734, downloaded 458, added 0
+ WARN  Request took 18456ms: https://registry.npmjs.org/@graphql-codegen%2Fschema-ast
+Progress: resolved 2313, reused 1734, downloaded 458, added 0
+ WARN  Request took 18679ms: https://registry.npmjs.org/@graphql-codegen%2Fplugin-helpers
+Progress: resolved 2316, reused 1739, downloaded 458, added 0
+Progress: resolved 2326, reused 1749, downloaded 458, added 0
+Progress: resolved 2327, reused 1750, downloaded 458, added 0
+Progress: resolved 2334, reused 1757, downloaded 458, added 0
+Progress: resolved 2338, reused 1759, downloaded 458, added 0
+Progress: resolved 2340, reused 1759, downloaded 460, added 0
+ WARN  Tarball download average speed 32 KiB/s (size 45 KiB) is below 50 KiB/s: https://registry.npmjs.org/autoprefixer/-/autoprefixer-10.4.21.tgz (GET)
+Progress: resolved 2344, reused 1759, downloaded 461, added 0
+Progress: resolved 2346, reused 1760, downloaded 464, added 0
+Progress: resolved 2349, reused 1761, downloaded 464, added 0
+Progress: resolved 2349, reused 1761, downloaded 465, added 0
+ WARN  Tarball download average speed 47 KiB/s (size 155 KiB) is below 50 KiB/s: https://registry.npmjs.org/esquery/-/esquery-1.5.0.tgz (GET)
+Progress: resolved 2350, reused 1762, downloaded 465, added 0
+Progress: resolved 2353, reused 1763, downloaded 466, added 0
+Progress: resolved 2357, reused 1765, downloaded 467, added 0
+Progress: resolved 2359, reused 1766, downloaded 468, added 0
+ WARN  Tarball download average speed 4 KiB/s (size 21 KiB) is below 50 KiB/s: https://registry.npmjs.org/@eslint/plugin-kit/-/plugin-kit-0.4.0.tgz (GET)
+Progress: resolved 2370, reused 1773, downloaded 472, added 0
+Progress: resolved 2371, reused 1774, downloaded 472, added 0
+ WARN  Request took 12222ms: https://registry.npmjs.org/next
+ WARN  Tarball download average speed 1 KiB/s (size 18 KiB) is below 50 KiB/s: https://registry.npmjs.org/fraction.js/-/fraction.js-4.3.7.tgz (GET)
+Progress: resolved 2373, reused 1776, downloaded 473, added 0
+ WARN  Request took 11022ms: https://registry.npmjs.org/turbo-windows-arm64
+Progress: resolved 2374, reused 1776, downloaded 473, added 0
+Progress: resolved 2375, reused 1776, downloaded 474, added 0
+Progress: resolved 2379, reused 1776, downloaded 476, added 0
+Progress: resolved 2384, reused 1776, downloaded 477, added 0
+Progress: resolved 2388, reused 1776, downloaded 483, added 0
+ WARN  Tarball download average speed 31 KiB/s (size 54 KiB) is below 50 KiB/s: https://registry.npmjs.org/@lezer/common/-/common-1.2.3.tgz (GET)
+ WARN  Tarball download average speed 24 KiB/s (size 40 KiB) is below 50 KiB/s: https://registry.npmjs.org/@lezer/lr/-/lr-1.4.2.tgz (GET)
+Progress: resolved 2390, reused 1778, downloaded 487, added 0
+Progress: resolved 2392, reused 1780, downloaded 487, added 0
+Progress: resolved 2396, reused 1780, downloaded 487, added 0
+Progress: resolved 2406, reused 1784, downloaded 493, added 0
+ WARN  Tarball download average speed 6 KiB/s (size 7 KiB) is below 50 KiB/s: https://registry.npmjs.org/estraverse/-/estraverse-4.3.0.tgz (GET)
+Progress: resolved 2415, reused 1787, downloaded 501, added 0
+Progress: resolved 2417, reused 1788, downloaded 502, added 0
+Progress: resolved 2420, reused 1788, downloaded 503, added 0
+Progress: resolved 2420, reused 1788, downloaded 505, added 0
+Progress: resolved 2423, reused 1788, downloaded 505, added 0
+Progress: resolved 2423, reused 1788, downloaded 506, added 0
+Progress: resolved 2423, reused 1788, downloaded 507, added 0
+Progress: resolved 2423, reused 1788, downloaded 508, added 0
+Progress: resolved 2423, reused 1788, downloaded 509, added 0
+ WARN  Tarball download average speed 0 KiB/s (size 16 KiB) is below 50 KiB/s: https://registry.npmjs.org/@lezer/highlight/-/highlight-1.2.1.tgz (GET)
+Progress: resolved 2423, reused 1788, downloaded 510, added 0
+ WARN  Request took 13326ms: https://registry.npmjs.org/@playwright%2Ftest
+Progress: resolved 2424, reused 1788, downloaded 510, added 0
+Progress: resolved 2436, reused 1788, downloaded 512, added 0
+Progress: resolved 2458, reused 1788, downloaded 527, added 0
+ WARN  Tarball download average speed 16 KiB/s (size 19 KiB) is below 50 KiB/s: https://registry.npmjs.org/whatwg-url/-/whatwg-url-16.0.1.tgz (GET)
+ WARN  Tarball download average speed 2 KiB/s (size 4 KiB) is below 50 KiB/s: https://registry.npmjs.org/html-encoding-sniffer/-/html-encoding-sniffer-6.0.0.tgz (GET)
+ WARN  Tarball download average speed 4 KiB/s (size 5 KiB) is below 50 KiB/s: https://registry.npmjs.org/w3c-xmlserializer/-/w3c-xmlserializer-5.0.0.tgz (GET)
+Progress: resolved 2470, reused 1789, downloaded 545, added 0
+Progress: resolved 2479, reused 1789, downloaded 547, added 0
+Progress: resolved 2484, reused 1789, downloaded 553, added 0
+ WARN  Tarball download average speed 10 KiB/s (size 16 KiB) is below 50 KiB/s: https://registry.npmjs.org/@tanstack/history/-/history-1.154.14.tgz (GET)
+ WARN  Tarball download average speed 2 KiB/s (size 6 KiB) is below 50 KiB/s: https://registry.npmjs.org/cookie-es/-/cookie-es-2.0.0.tgz (GET)
+Progress: resolved 2485, reused 1789, downloaded 557, added 0
+Progress: resolved 2486, reused 1789, downloaded 557, added 0
+Progress: resolved 2487, reused 1789, downloaded 557, added 0
+Progress: resolved 2487, reused 1789, downloaded 560, added 0
+Progress: resolved 2493, reused 1794, downloaded 562, added 0
+Progress: resolved 2494, reused 1794, downloaded 564, added 0
+Progress: resolved 2494, reused 1794, downloaded 565, added 0
+ WARN  Request took 37736ms: https://registry.npmjs.org/playwright-core
+Progress: resolved 2495, reused 1794, downloaded 565, added 0
+Progress: resolved 2496, reused 1794, downloaded 565, added 0
+ WARN  15 deprecated subdependencies found: @graphql-tools/prisma-loader@8.0.17, @npmcli/move-file@1.1.2, @types/lz-string@1.5.0, are-we-there-yet@2.0.0, are-we-there-yet@3.0.1, gauge@3.0.2, gauge@4.0.4, glob@10.5.0, glob@7.1.6, glob@7.2.3, inflight@1.0.6, node-domexception@1.0.0, npmlog@5.0.1, npmlog@6.0.2, rimraf@3.0.2
+Packages: +2364
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 2496, reused 1794, downloaded 566, added 0
+Progress: resolved 2496, reused 1794, downloaded 566, added 1
+Progress: resolved 2496, reused 1794, downloaded 566, added 13
+Progress: resolved 2496, reused 1794, downloaded 566, added 47
+Progress: resolved 2496, reused 1794, downloaded 566, added 48
+Progress: resolved 2496, reused 1794, downloaded 567, added 52
+Progress: resolved 2496, reused 1794, downloaded 567, added 59
+Progress: resolved 2496, reused 1794, downloaded 567, added 73
+Progress: resolved 2496, reused 1794, downloaded 567, added 74
+Progress: resolved 2496, reused 1794, downloaded 567, added 79
+Progress: resolved 2496, reused 1794, downloaded 567, added 80
+Progress: resolved 2496, reused 1794, downloaded 567, added 89
+Progress: resolved 2496, reused 1794, downloaded 567, added 98
+Progress: resolved 2496, reused 1794, downloaded 567, added 105
+Progress: resolved 2496, reused 1794, downloaded 567, added 109
+Progress: resolved 2496, reused 1794, downloaded 567, added 111
+Progress: resolved 2496, reused 1794, downloaded 567, added 112
+Progress: resolved 2496, reused 1794, downloaded 567, added 115
+Progress: resolved 2496, reused 1794, downloaded 567, added 116
+Progress: resolved 2496, reused 1794, downloaded 567, added 130
+Progress: resolved 2496, reused 1794, downloaded 567, added 135
+Progress: resolved 2496, reused 1794, downloaded 567, added 136
+Progress: resolved 2496, reused 1794, downloaded 567, added 142
+Progress: resolved 2496, reused 1794, downloaded 568, added 146
+Progress: resolved 2496, reused 1794, downloaded 568, added 147
+Progress: resolved 2496, reused 1794, downloaded 568, added 148
+Progress: resolved 2496, reused 1794, downloaded 568, added 153
+Progress: resolved 2496, reused 1794, downloaded 568, added 157
+Progress: resolved 2496, reused 1794, downloaded 568, added 158
+Progress: resolved 2496, reused 1794, downloaded 568, added 161
+Progress: resolved 2496, reused 1794, downloaded 568, added 162
+Progress: resolved 2496, reused 1794, downloaded 568, added 165
+Progress: resolved 2496, reused 1794, downloaded 568, added 168
+Progress: resolved 2496, reused 1794, downloaded 568, added 169
+Progress: resolved 2496, reused 1794, downloaded 568, added 170
+Progress: resolved 2496, reused 1794, downloaded 568, added 174
+Progress: resolved 2496, reused 1794, downloaded 568, added 175
+Progress: resolved 2496, reused 1794, downloaded 568, added 176
+Progress: resolved 2496, reused 1794, downloaded 568, added 177
+Progress: resolved 2496, reused 1794, downloaded 568, added 178
+Progress: resolved 2496, reused 1794, downloaded 568, added 182
+Progress: resolved 2496, reused 1794, downloaded 568, added 185
+Progress: resolved 2496, reused 1794, downloaded 568, added 187
+Progress: resolved 2496, reused 1794, downloaded 568, added 188
+Progress: resolved 2496, reused 1794, downloaded 568, added 189
+Progress: resolved 2496, reused 1794, downloaded 568, added 190
+Progress: resolved 2496, reused 1794, downloaded 568, added 191
+Progress: resolved 2496, reused 1794, downloaded 568, added 192
+Progress: resolved 2496, reused 1794, downloaded 568, added 195
+Progress: resolved 2496, reused 1794, downloaded 568, added 196
+Progress: resolved 2496, reused 1794, downloaded 568, added 199
+Progress: resolved 2496, reused 1794, downloaded 568, added 200
+Progress: resolved 2496, reused 1794, downloaded 568, added 202
+Progress: resolved 2496, reused 1794, downloaded 568, added 203
+Progress: resolved 2496, reused 1794, downloaded 568, added 204
+Progress: resolved 2496, reused 1794, downloaded 568, added 205
+Progress: resolved 2496, reused 1794, downloaded 568, added 206
+Progress: resolved 2496, reused 1794, downloaded 568, added 207
+Progress: resolved 2496, reused 1794, downloaded 568, added 208
+Progress: resolved 2496, reused 1794, downloaded 568, added 209
+Progress: resolved 2496, reused 1794, downloaded 568, added 211
+Progress: resolved 2496, reused 1794, downloaded 568, added 212
+Progress: resolved 2496, reused 1794, downloaded 568, added 213
+Progress: resolved 2496, reused 1794, downloaded 568, added 214
+Progress: resolved 2496, reused 1794, downloaded 568, added 215
+Progress: resolved 2496, reused 1794, downloaded 568, added 217
+Progress: resolved 2496, reused 1794, downloaded 568, added 218
+Progress: resolved 2496, reused 1794, downloaded 568, added 219
+Progress: resolved 2496, reused 1794, downloaded 568, added 225
+Progress: resolved 2496, reused 1794, downloaded 568, added 226
+Progress: resolved 2496, reused 1794, downloaded 568, added 230
+Progress: resolved 2496, reused 1794, downloaded 568, added 231
+Progress: resolved 2496, reused 1794, downloaded 568, added 233
+Progress: resolved 2496, reused 1794, downloaded 568, added 234
+Progress: resolved 2496, reused 1794, downloaded 568, added 237
+Progress: resolved 2496, reused 1794, downloaded 568, added 238
+Progress: resolved 2496, reused 1794, downloaded 568, added 245
+Progress: resolved 2496, reused 1794, downloaded 568, added 246
+Progress: resolved 2496, reused 1794, downloaded 568, added 256
+Progress: resolved 2496, reused 1794, downloaded 568, added 257
+Progress: resolved 2496, reused 1794, downloaded 568, added 258
+Progress: resolved 2496, reused 1794, downloaded 568, added 259
+Progress: resolved 2496, reused 1794, downloaded 568, added 265
+Progress: resolved 2496, reused 1794, downloaded 568, added 266
+Progress: resolved 2496, reused 1794, downloaded 568, added 270
+Progress: resolved 2496, reused 1794, downloaded 568, added 271
+Progress: resolved 2496, reused 1794, downloaded 568, added 272
+Progress: resolved 2496, reused 1794, downloaded 568, added 275
+Progress: resolved 2496, reused 1794, downloaded 568, added 278
+Progress: resolved 2496, reused 1794, downloaded 568, added 279
+Progress: resolved 2496, reused 1794, downloaded 568, added 282
+Progress: resolved 2496, reused 1794, downloaded 568, added 283
+Progress: resolved 2496, reused 1794, downloaded 568, added 284
+Progress: resolved 2496, reused 1794, downloaded 568, added 287
+Progress: resolved 2496, reused 1794, downloaded 568, added 288
+Progress: resolved 2496, reused 1794, downloaded 568, added 289
+Progress: resolved 2496, reused 1794, downloaded 568, added 290
+Progress: resolved 2496, reused 1794, downloaded 568, added 295
+Progress: resolved 2496, reused 1794, downloaded 568, added 299
+Progress: resolved 2496, reused 1794, downloaded 568, added 300
+Progress: resolved 2496, reused 1794, downloaded 568, added 303
+Progress: resolved 2496, reused 1794, downloaded 568, added 304
+Progress: resolved 2496, reused 1794, downloaded 568, added 310
+Progress: resolved 2496, reused 1794, downloaded 568, added 311
+Progress: resolved 2496, reused 1794, downloaded 568, added 312
+Progress: resolved 2496, reused 1794, downloaded 568, added 322
+Progress: resolved 2496, reused 1794, downloaded 568, added 323
+Progress: resolved 2496, reused 1794, downloaded 568, added 327
+Progress: resolved 2496, reused 1794, downloaded 568, added 329
+Progress: resolved 2496, reused 1794, downloaded 568, added 330
+Progress: resolved 2496, reused 1794, downloaded 568, added 331
+Progress: resolved 2496, reused 1794, downloaded 568, added 332
+Progress: resolved 2496, reused 1794, downloaded 568, added 337
+Progress: resolved 2496, reused 1794, downloaded 568, added 345
+Progress: resolved 2496, reused 1794, downloaded 568, added 355
+Progress: resolved 2496, reused 1794, downloaded 568, added 356
+Progress: resolved 2496, reused 1794, downloaded 568, added 358
+Progress: resolved 2496, reused 1794, downloaded 568, added 359
+Progress: resolved 2496, reused 1794, downloaded 568, added 360
+Progress: resolved 2496, reused 1794, downloaded 568, added 362
+Progress: resolved 2496, reused 1794, downloaded 568, added 369
+Progress: resolved 2496, reused 1794, downloaded 568, added 372
+Progress: resolved 2496, reused 1794, downloaded 568, added 373
+Progress: resolved 2496, reused 1794, downloaded 568, added 376
+Progress: resolved 2496, reused 1794, downloaded 568, added 377
+Progress: resolved 2496, reused 1794, downloaded 568, added 379
+Progress: resolved 2496, reused 1794, downloaded 568, added 380
+Progress: resolved 2496, reused 1794, downloaded 568, added 385
+Progress: resolved 2496, reused 1794, downloaded 568, added 386
+Progress: resolved 2496, reused 1794, downloaded 568, added 392
+Progress: resolved 2496, reused 1794, downloaded 568, added 394
+Progress: resolved 2496, reused 1794, downloaded 568, added 395
+Progress: resolved 2496, reused 1794, downloaded 568, added 397
+Progress: resolved 2496, reused 1794, downloaded 568, added 399
+Progress: resolved 2496, reused 1794, downloaded 568, added 400
+Progress: resolved 2496, reused 1794, downloaded 568, added 407
+Progress: resolved 2496, reused 1794, downloaded 568, added 408
+Progress: resolved 2496, reused 1794, downloaded 568, added 409
+Progress: resolved 2496, reused 1794, downloaded 568, added 410
+Progress: resolved 2496, reused 1794, downloaded 568, added 411
+Progress: resolved 2496, reused 1794, downloaded 568, added 413
+Progress: resolved 2496, reused 1794, downloaded 568, added 414
+Progress: resolved 2496, reused 1794, downloaded 568, added 416
+Progress: resolved 2496, reused 1794, downloaded 568, added 417
+Progress: resolved 2496, reused 1794, downloaded 568, added 419
+Progress: resolved 2496, reused 1794, downloaded 568, added 420
+Progress: resolved 2496, reused 1794, downloaded 568, added 421
+Progress: resolved 2496, reused 1794, downloaded 568, added 422
+Progress: resolved 2496, reused 1794, downloaded 568, added 423
+Progress: resolved 2496, reused 1794, downloaded 568, added 424
+Progress: resolved 2496, reused 1794, downloaded 568, added 425
+Progress: resolved 2496, reused 1794, downloaded 568, added 426
+Progress: resolved 2496, reused 1794, downloaded 568, added 429
+Progress: resolved 2496, reused 1794, downloaded 568, added 430
+Progress: resolved 2496, reused 1794, downloaded 568, added 438
+Progress: resolved 2496, reused 1794, downloaded 568, added 439
+Progress: resolved 2496, reused 1794, downloaded 568, added 445
+Progress: resolved 2496, reused 1794, downloaded 568, added 446
+Progress: resolved 2496, reused 1794, downloaded 568, added 447
+Progress: resolved 2496, reused 1794, downloaded 568, added 449
+Progress: resolved 2496, reused 1794, downloaded 568, added 450
+Progress: resolved 2496, reused 1794, downloaded 568, added 451
+Progress: resolved 2496, reused 1794, downloaded 568, added 459
+Progress: resolved 2496, reused 1794, downloaded 568, added 461
+Progress: resolved 2496, reused 1794, downloaded 568, added 462
+Progress: resolved 2496, reused 1794, downloaded 568, added 465
+Progress: resolved 2496, reused 1794, downloaded 568, added 466
+Progress: resolved 2496, reused 1794, downloaded 568, added 470
+Progress: resolved 2496, reused 1794, downloaded 568, added 473
+Progress: resolved 2496, reused 1794, downloaded 568, added 482
+Progress: resolved 2496, reused 1794, downloaded 568, added 483
+Progress: resolved 2496, reused 1794, downloaded 568, added 493
+Progress: resolved 2496, reused 1794, downloaded 568, added 505
+Progress: resolved 2496, reused 1794, downloaded 568, added 506
+Progress: resolved 2496, reused 1794, downloaded 568, added 510
+Progress: resolved 2496, reused 1794, downloaded 568, added 511
+Progress: resolved 2496, reused 1794, downloaded 568, added 517
+Progress: resolved 2496, reused 1794, downloaded 568, added 525
+Progress: resolved 2496, reused 1794, downloaded 568, added 532
+Progress: resolved 2496, reused 1794, downloaded 568, added 542
+Progress: resolved 2496, reused 1794, downloaded 568, added 543
+Progress: resolved 2496, reused 1794, downloaded 568, added 544
+Progress: resolved 2496, reused 1794, downloaded 568, added 545
+Progress: resolved 2496, reused 1794, downloaded 568, added 546
+Progress: resolved 2496, reused 1794, downloaded 568, added 547
+Progress: resolved 2496, reused 1794, downloaded 568, added 559
+Progress: resolved 2496, reused 1794, downloaded 568, added 560
+Progress: resolved 2496, reused 1794, downloaded 568, added 568
+Progress: resolved 2496, reused 1794, downloaded 568, added 582
+Progress: resolved 2496, reused 1794, downloaded 568, added 583
+Progress: resolved 2496, reused 1794, downloaded 568, added 588
+Progress: resolved 2496, reused 1794, downloaded 568, added 589
+Progress: resolved 2496, reused 1794, downloaded 568, added 596
+Progress: resolved 2496, reused 1794, downloaded 568, added 601
+Progress: resolved 2496, reused 1794, downloaded 568, added 604
+Progress: resolved 2496, reused 1794, downloaded 568, added 605
+Progress: resolved 2496, reused 1794, downloaded 568, added 606
+Progress: resolved 2496, reused 1794, downloaded 568, added 609
+Progress: resolved 2496, reused 1794, downloaded 568, added 610
+Progress: resolved 2496, reused 1794, downloaded 568, added 611
+Progress: resolved 2496, reused 1794, downloaded 568, added 618
+Progress: resolved 2496, reused 1794, downloaded 568, added 625
+Progress: resolved 2496, reused 1794, downloaded 568, added 629
+Progress: resolved 2496, reused 1794, downloaded 568, added 633
+Progress: resolved 2496, reused 1794, downloaded 568, added 634
+Progress: resolved 2496, reused 1794, downloaded 568, added 635
+Progress: resolved 2496, reused 1794, downloaded 568, added 636
+Progress: resolved 2496, reused 1794, downloaded 568, added 641
+Progress: resolved 2496, reused 1794, downloaded 568, added 646
+Progress: resolved 2496, reused 1794, downloaded 568, added 647
+Progress: resolved 2496, reused 1794, downloaded 568, added 653
+Progress: resolved 2496, reused 1794, downloaded 568, added 654
+Progress: resolved 2496, reused 1794, downloaded 568, added 656
+Progress: resolved 2496, reused 1794, downloaded 568, added 659
+Progress: resolved 2496, reused 1794, downloaded 568, added 660
+Progress: resolved 2496, reused 1794, downloaded 568, added 669
+Progress: resolved 2496, reused 1794, downloaded 568, added 676
+Progress: resolved 2496, reused 1794, downloaded 568, added 677
+Progress: resolved 2496, reused 1794, downloaded 568, added 678
+Progress: resolved 2496, reused 1794, downloaded 568, added 684
+Progress: resolved 2496, reused 1794, downloaded 568, added 685
+Progress: resolved 2496, reused 1794, downloaded 568, added 697
+Progress: resolved 2496, reused 1794, downloaded 568, added 703
+Progress: resolved 2496, reused 1794, downloaded 568, added 706
+Progress: resolved 2496, reused 1794, downloaded 568, added 709
+Progress: resolved 2496, reused 1794, downloaded 568, added 710
+Progress: resolved 2496, reused 1794, downloaded 568, added 718
+Progress: resolved 2496, reused 1794, downloaded 568, added 719
+Progress: resolved 2496, reused 1794, downloaded 568, added 721
+Progress: resolved 2496, reused 1794, downloaded 568, added 722
+Progress: resolved 2496, reused 1794, downloaded 568, added 723
+Progress: resolved 2496, reused 1794, downloaded 568, added 725
+Progress: resolved 2496, reused 1794, downloaded 568, added 726
+Progress: resolved 2496, reused 1794, downloaded 568, added 732
+Progress: resolved 2496, reused 1794, downloaded 568, added 733
+Progress: resolved 2496, reused 1794, downloaded 568, added 742
+Progress: resolved 2496, reused 1794, downloaded 568, added 743
+Progress: resolved 2496, reused 1794, downloaded 568, added 747
+Progress: resolved 2496, reused 1794, downloaded 568, added 748
+Progress: resolved 2496, reused 1794, downloaded 568, added 749
+Progress: resolved 2496, reused 1794, downloaded 568, added 750
+Progress: resolved 2496, reused 1794, downloaded 568, added 751
+Progress: resolved 2496, reused 1794, downloaded 568, added 757
+Progress: resolved 2496, reused 1794, downloaded 568, added 763
+Progress: resolved 2496, reused 1794, downloaded 568, added 765
+Progress: resolved 2496, reused 1794, downloaded 568, added 766
+Progress: resolved 2496, reused 1794, downloaded 568, added 772
+Progress: resolved 2496, reused 1794, downloaded 568, added 773
+Progress: resolved 2496, reused 1794, downloaded 568, added 785
+Progress: resolved 2496, reused 1794, downloaded 568, added 786
+Progress: resolved 2496, reused 1794, downloaded 568, added 794
+Progress: resolved 2496, reused 1794, downloaded 568, added 796
+Progress: resolved 2496, reused 1794, downloaded 568, added 798
+Progress: resolved 2496, reused 1794, downloaded 568, added 799
+Progress: resolved 2496, reused 1794, downloaded 568, added 801
+Progress: resolved 2496, reused 1794, downloaded 568, added 805
+Progress: resolved 2496, reused 1794, downloaded 568, added 817
+Progress: resolved 2496, reused 1794, downloaded 568, added 818
+Progress: resolved 2496, reused 1794, downloaded 568, added 819
+Progress: resolved 2496, reused 1794, downloaded 568, added 826
+Progress: resolved 2496, reused 1794, downloaded 568, added 837
+Progress: resolved 2496, reused 1794, downloaded 568, added 845
+Progress: resolved 2496, reused 1794, downloaded 568, added 847
+Progress: resolved 2496, reused 1794, downloaded 568, added 848
+Progress: resolved 2496, reused 1794, downloaded 568, added 851
+Progress: resolved 2496, reused 1794, downloaded 568, added 854
+Progress: resolved 2496, reused 1794, downloaded 568, added 862
+Progress: resolved 2496, reused 1794, downloaded 568, added 869
+Progress: resolved 2496, reused 1794, downloaded 568, added 870
+Progress: resolved 2496, reused 1794, downloaded 568, added 880
+Progress: resolved 2496, reused 1794, downloaded 568, added 881
+Progress: resolved 2496, reused 1794, downloaded 568, added 896
+Progress: resolved 2496, reused 1794, downloaded 568, added 905
+Progress: resolved 2496, reused 1794, downloaded 568, added 907
+Progress: resolved 2496, reused 1794, downloaded 568, added 908
+Progress: resolved 2496, reused 1794, downloaded 568, added 916
+Progress: resolved 2496, reused 1794, downloaded 568, added 920
+Progress: resolved 2496, reused 1794, downloaded 568, added 925
+Progress: resolved 2496, reused 1794, downloaded 568, added 937
+Progress: resolved 2496, reused 1794, downloaded 568, added 938
+ ERR_PNPM_EEXIST  EEXIST: file already exists, symlink 'D:\Coding\supadash\SupaDash\studio\node_modules\.pnpm\mime@1.6.0\node_modules\mime' -> 'D:\Coding\supadash\SupaDash\studio\node_modules\.pnpm\send@0.19.0\node_modules\mime'
