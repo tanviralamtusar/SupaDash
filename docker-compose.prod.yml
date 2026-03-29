@@ -51,12 +51,41 @@ services:
           memory: 256M
           cpus: "0.5"
 
+  studio:
+    build:
+      context: ./studio
+      dockerfile: Dockerfile
+    image: supadash/studio:latest
+    container_name: supadash-studio
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      - SUPADASH_API_URL=http://api:8080
+      - STUDIO_PG_META_URL=http://api:8080/platform/pg-meta
+      - NEXT_PUBLIC_SITE_TITLE=SupaDash
+      - NEXT_PUBLIC_ENABLE_LOGS=true
+      - NEXT_ANALYTICS_BACKEND_PROVIDER=postgres
+      - HOSTNAME=0.0.0.0
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/platform/profile').then(r => { if (r.status !== 200) throw new Error(r.status) })"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "1.0"
+
   caddy:
     image: caddy:2-alpine
     container_name: supadash-caddy
     restart: unless-stopped
     depends_on:
       - api
+      - studio
     ports:
       - "80:80"
       - "443:443"
