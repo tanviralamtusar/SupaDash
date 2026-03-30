@@ -35,6 +35,9 @@ const nextConfig = {
   output: 'standalone',
   experimental: {
     clientRouterFilter: false,
+    // SUPADASH PATCH: Prevent multi-worker memory spikes during Docker build
+    cpus: 1,
+    workerThreads: false,
   },
   async rewrites() {
     return [
@@ -611,40 +614,6 @@ const nextConfig = {
   },
 }
 
-// Make sure adding Sentry options is the last code to run before exporting, to
-// ensure that your source maps include changes from all other Webpack plugins
-module.exports =
-  process.env.NEXT_PUBLIC_IS_PLATFORM === 'true'
-    ? withSentryConfig(withBundleAnalyzer(nextConfig), {
-        silent: true,
-
-        // For all available options, see:
-        // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
-
-        // Upload a larger set of source maps for prettier stack traces (increases build time)
-        widenClientFileUpload: true,
-
-        // Automatically annotate React components to show their full name in breadcrumbs and session replay
-        reactComponentAnnotation: {
-          enabled: true,
-        },
-
-        // Hides source maps from generated client bundles
-        hideSourceMaps: true,
-
-        // Automatically tree-shake Sentry logger statements to reduce bundle size
-        disableLogger: true,
-
-        // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-        // See the following for more information:
-        // https://docs.sentry.io/product/crons/
-        // https://vercel.com/docs/cron-jobs
-        automaticVercelMonitors: true,
-
-        // Annotate bundles at build time so thirdPartyErrorFilterIntegration can
-        // distinguish our code from browser extensions / injected scripts at runtime.
-        unstable_sentryWebpackPluginOptions: {
-          applicationKey: 'supabase-studio',
-        },
-      })
-    : nextConfig
+// SUPADASH PATCH: Bypassing Sentry webpack plugin because it consumes ~10GB RAM
+// and we don't need Sentry in self-hosted deployments.
+module.exports = nextConfig
