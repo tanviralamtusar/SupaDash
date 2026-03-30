@@ -26,6 +26,10 @@ RUN if [ -d files ]; then cp -R files/* .; fi
 # Environment variables for build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+# Prevent OOM during Next.js build on low-memory servers
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+# Skip Supabase's asset upload script (not needed for self-hosted)
+ENV SKIP_ASSET_UPLOAD=1
 
 # SupaDash-specific build args
 ARG SUPADASH_API_URL=http://localhost:8080
@@ -35,6 +39,8 @@ ENV NEXT_PUBLIC_SUPADASH_API_URL=$SUPADASH_API_URL
 ENV NEXT_PUBLIC_IS_PLATFORM=true
 # Set API URL to be caught by our custom proxy
 ENV NEXT_PUBLIC_API_URL=/api
+# Disable Sentry (not needed for self-hosted)
+ENV SENTRY_SUPPRESS_TURBOPACK_WARNING=1
 
 RUN \
   if [ -f yarn.lock ]; then yarn build; \
