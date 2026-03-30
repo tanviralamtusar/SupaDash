@@ -45,7 +45,7 @@ ENV SENTRY_SUPPRESS_TURBOPACK_WARNING=1
 RUN \
   if [ -f yarn.lock ]; then yarn build; \
   elif [ -f package-lock.json ]; then npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm build; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm --filter ui run generate-styles && pnpm build; \
   else npm run build; \
   fi
 
