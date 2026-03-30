@@ -93,6 +93,7 @@
     "@vitest/coverage-v8": "^3.2.0",
     "common": "workspace:*",
     "config": "workspace:*",
+    "deepmerge": "^4.3.1",
     "glob": "^8.1.0",
     "style-dictionary": "^3.7.1",
     "tsconfig": "workspace:*",
