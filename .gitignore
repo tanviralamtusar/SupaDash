@@ -1,4 +1,4 @@
-﻿# Dependencies
+# Dependencies
 **/node_modules/
 .pnpm-store/
 
@@ -7,10 +7,13 @@ studio/.build/
 dist/
 .next/
 out/
-build/
+/build/
 .turbo/
 .vercel
 .output/
+
+# Un-ignore ui build as it is required
+!studio/packages/ui/build/
 
 # Misc
 .DS_Store
