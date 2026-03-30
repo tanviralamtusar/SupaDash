@@ -1,10 +1,11 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL
-  ? new URL(process.env.NEXT_PUBLIC_API_URL).origin
-  : ''
-const SUPABASE_URL = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).origin : ''
-const GOTRUE_URL = process.env.NEXT_PUBLIC_GOTRUE_URL
-  ? new URL(process.env.NEXT_PUBLIC_GOTRUE_URL).origin
-  : ''
+function safeOrigin(urlStr) {
+  if (!urlStr) return ''
+  try { return new URL(urlStr).origin } catch { return '' }
+}
+
+const API_URL = safeOrigin(process.env.NEXT_PUBLIC_API_URL)
+const SUPABASE_URL = safeOrigin(process.env.SUPABASE_URL)
+const GOTRUE_URL = safeOrigin(process.env.NEXT_PUBLIC_GOTRUE_URL)
 const SUPABASE_PROJECTS_URL = 'https://*.supabase.co https://*.storage.supabase.co'
 const SUPABASE_PROJECTS_URL_WS = 'wss://*.supabase.co'
 
@@ -17,14 +18,10 @@ if (SUPABASE_URL) {
 }
 
 // Needed to test docs search in local dev
-const SUPABASE_DOCS_PROJECT_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin
-  : ''
+const SUPABASE_DOCS_PROJECT_URL = safeOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL)
 
 // Needed to test docs content API in local dev
-const SUPABASE_CONTENT_API_URL = process.env.NEXT_PUBLIC_CONTENT_API_URL
-  ? new URL(process.env.NEXT_PUBLIC_CONTENT_API_URL).origin
-  : ''
+const SUPABASE_CONTENT_API_URL = safeOrigin(process.env.NEXT_PUBLIC_CONTENT_API_URL)
 
 const isDevOrStaging =
   process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview' ||
