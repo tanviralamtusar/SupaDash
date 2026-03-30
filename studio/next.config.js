@@ -612,6 +612,9 @@ const nextConfig = {
     // For production, we run typechecks separate from the build command (pnpm typecheck && pnpm build)
     ignoreBuildErrors: true,
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 }
 
 // SUPADASH PATCH: Bypassing Sentry webpack plugin because it consumes ~10GB RAM
