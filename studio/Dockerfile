@@ -27,7 +27,7 @@ RUN if [ -d files ]; then cp -R files/* .; fi
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 # Prevent OOM during Next.js build on low-memory servers
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 # Skip Supabase's asset upload script (not needed for self-hosted)
 ENV SKIP_ASSET_UPLOAD=1
 
