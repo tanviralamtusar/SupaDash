@@ -34,7 +34,6 @@ const nextConfig = {
   assetPrefix: getAssetPrefix(),
   output: 'standalone',
   experimental: {
-    clientRouterFilter: false,
     // SUPADASH PATCH: Prevent multi-worker memory spikes during Docker build
     cpus: 1,
     workerThreads: false,
@@ -611,9 +610,6 @@ const nextConfig = {
     // Typechecking is run via GitHub Action only for efficiency
     // For production, we run typechecks separate from the build command (pnpm typecheck && pnpm build)
     ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },
 }
 

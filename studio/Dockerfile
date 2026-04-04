@@ -41,6 +41,7 @@ ENV NEXT_PUBLIC_IS_PLATFORM=true
 ENV NEXT_PUBLIC_API_URL=/api
 # Disable Sentry (not needed for self-hosted)
 ENV SENTRY_SUPPRESS_TURBOPACK_WARNING=1
+ENV TURBOPACK=0
 
 RUN \
   if [ -f yarn.lock ]; then yarn --cwd packages/ui run generate-styles && yarn build; \
