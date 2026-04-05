@@ -1,6 +1,6 @@
 import { ProfileImage } from 'components/ui/ProfileImage'
 import { useIsFeatureEnabled } from 'hooks/misc/useIsFeatureEnabled'
-import { IS_PLATFORM } from 'lib/constants'
+
 import { useProfileNameAndPicture } from 'lib/profile'
 import { FlaskConical, Loader2, ScrollText, Settings } from 'lucide-react'
 import { useTheme } from 'next-themes'
@@ -58,8 +58,8 @@ export function UserDropdown({
       </DropdownMenuTrigger>
 
       <DropdownMenuContent side="bottom" align="end" className={contentClassName}>
-        {IS_PLATFORM && (
-          <>
+        {/* User profile info */}
+        <>
             <div className="px-2 py-1 flex flex-col gap-0 text-sm">
               {!!username ? (
                 <>
@@ -117,7 +117,7 @@ export function UserDropdown({
               <DropdownMenuSeparator />
             </DropdownMenuGroup>
           </>
-        )}
+        {/* Theme selector */}
         <DropdownMenuGroup>
           <DropdownMenuLabel>Theme</DropdownMenuLabel>
           <DropdownMenuRadioGroup
@@ -137,8 +137,8 @@ export function UserDropdown({
             ))}
           </DropdownMenuRadioGroup>
         </DropdownMenuGroup>
-        {IS_PLATFORM && (
-          <>
+        {/* Logout */}
+        <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem
@@ -151,7 +151,6 @@ export function UserDropdown({
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </>
-        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )

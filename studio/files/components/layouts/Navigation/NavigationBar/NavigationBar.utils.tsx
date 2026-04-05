@@ -3,7 +3,7 @@ import type { Route } from 'components/ui/ui.types'
 import { EditorIndexPageLink } from 'data/prefetchers/project.$ref.editor'
 import type { Project } from 'data/projects/project-detail-query'
 import { Auth, Database, EdgeFunctions, Realtime, SqlEditor, Storage, TableEditor } from 'icons'
-import { IS_PLATFORM, PROJECT_STATUS } from 'lib/constants'
+import { PROJECT_STATUS } from 'lib/constants'
 import { Blocks, Cpu, FileText, Lightbulb, List, Settings, Telescope } from 'lucide-react'
 
 interface RouteContext {
@@ -157,7 +157,7 @@ export const generateOtherRoutes = (
 ): Route[] => {
   const { isProjectActive, isProjectBuilding, buildingUrl } = getRouteContext(ref, project)
 
-  const isPlatform = features?.isPlatform ?? IS_PLATFORM
+  const isPlatform = features?.isPlatform ?? true
   const unifiedLogsEnabled = features?.unifiedLogs ?? false
   const reportsEnabled = features?.showReports ?? true
   const apiDocsSidePanelEnabled = features?.apiDocsSidePanel ?? false
@@ -213,7 +213,7 @@ export const generateOtherRoutes = (
 }
 
 export const generateSettingsRoutes = (ref?: string, features?: SettingsFeatures): Route[] => {
-  const isPlatform = features?.isPlatform ?? IS_PLATFORM
+  const isPlatform = features?.isPlatform ?? true
 
   return [
     {

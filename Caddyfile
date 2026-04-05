@@ -1,9 +1,12 @@
-# Replace with your domain or use localhost for local dev
+# Local development — accessible at http://localhost
 :80 {
-    reverse_proxy api:8080
-}
+    # API routes
+    handle /v1/* {
+        reverse_proxy api:8080
+    }
 
-# For production with a domain, replace the block above with:
-# supadash.yourdomain.com {
-#     reverse_proxy api:8080
-# }
+    # Studio (default)
+    handle {
+        reverse_proxy studio:3000
+    }
+}

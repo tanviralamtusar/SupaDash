@@ -5,7 +5,7 @@ import { SubmitHandler, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import * as z from 'zod'
 
-import { IS_PLATFORM, useFlag, useParams } from 'common'
+import { useFlag, useParams } from 'common'
 import AlertError from 'components/ui/AlertError'
 import { InlineLink } from 'components/ui/InlineLink'
 import NoPermission from 'components/ui/NoPermission'
@@ -262,13 +262,7 @@ export const StorageSettings = () => {
       <PageSection>
         <PageSectionContent className="flex flex-col gap-y-8">
           <Form_Shadcn_ {...form}>
-            {!IS_PLATFORM ? (
-              <Admonition
-                type="default"
-                title="Storage settings are not available for non-managed projects"
-                description="Storage settings are only available for SupaDash Managed projects."
-              />
-            ) : isLoading ? (
+            {isLoading ? (
               <GenericSkeletonLoader />
             ) : (
               <>
