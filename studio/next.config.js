@@ -585,13 +585,15 @@ const nextConfig = {
     'icons',
     'libpg-query',
   ],
+  // SUPADASH PATCH: Disable Turbopack for production builds.
+  // Turbopack's Rust workers bypass NODE_OPTIONS heap limits and OOM 16GB servers.
+  // Keep the turbopack rules for `next dev` but webpack rules handle production build.
   turbopack: {
     rules: {
       '*.md': {
         loaders: ['raw-loader'],
         as: '*.js',
       },
-      // special case for Deno libs to be loaded as a raw text. They're passed as raw text to the Monaco editor.
       'edge-runtime.d.ts': {
         loaders: ['raw-loader'],
         as: '*.js',
@@ -601,6 +603,18 @@ const nextConfig = {
         as: '*.js',
       },
     },
+  },
+  // Webpack rules (used when Turbopack is disabled via --no-turbopack)
+  webpack: (config) => {
+    config.module.rules.push({
+      test: /\.md$/,
+      use: 'raw-loader',
+    })
+    config.module.rules.push({
+      test: /edge-runtime\.d\.ts$|lib\.deno\.d\.ts$/,
+      use: 'raw-loader',
+    })
+    return config
   },
   onDemandEntries: {
     maxInactiveAge: 24 * 60 * 60 * 1000,
