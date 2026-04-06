@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import toast from 'react-hot-toast'
+import { toast } from 'sonner'
 
 import { useParams } from 'common'
 import Panel from 'components/ui/Panel'
@@ -79,7 +79,6 @@ const NewOrgForm = ({ onPaymentMethodReset }: NewOrgFormProps) => {
   return (
     <>
       <Panel
-        hideHeaderStyling
         title={
           <div key="panel-title">
             <h4>Create a new organization</h4>

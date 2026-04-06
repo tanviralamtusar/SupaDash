@@ -18,7 +18,7 @@ import { useProjectAnalysisQuery, useProjectResourcesQuery, useUpdateProjectReso
 import { ResourceGauge } from './ResourceGauge'
 import { ServiceUsageTable } from './ServiceUsageTable'
 import { formatBytes } from 'lib/helpers'
-import toast from 'react-hot-toast'
+import { toast } from 'sonner'
 
 interface ResourceManagerProps {
   projectRef: string
