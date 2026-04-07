@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-STUDIO_VERSION="${1:-v2026.03.04}"
+STUDIO_VERSION="${1:-v1.26.03}"
 IMAGE_TAG="${2:-supadash/studio:latest}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="$SCRIPT_DIR/.build"

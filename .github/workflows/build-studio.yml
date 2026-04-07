@@ -30,7 +30,7 @@ jobs:
       - name: Prepare Studio build context
         run: |
           set -euo pipefail
-          STUDIO_VERSION="v2026.03.04"
+          STUDIO_VERSION="v1.26.03"
           BUILD_DIR="${GITHUB_WORKSPACE}/_studio_build"
 
           echo "=== SupaDash Studio CI Build ==="
