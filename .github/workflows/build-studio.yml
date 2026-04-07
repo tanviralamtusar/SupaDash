@@ -36,31 +36,46 @@ jobs:
           echo "=== SupaDash Studio CI Build ==="
           echo "  Supabase Studio version: $STUDIO_VERSION"
 
-          # 1. Clone Supabase Studio (sparse checkout — only apps/studio + packages)
-          echo "[1/4] Cloning Supabase Studio $STUDIO_VERSION..."
+          # 1. Clone Supabase monorepo (sparse checkout)
+          echo "[1/5] Cloning Supabase Studio $STUDIO_VERSION..."
           mkdir -p "$BUILD_DIR"
           cd "$BUILD_DIR"
           git clone --depth 1 --branch "$STUDIO_VERSION" --filter=blob:none --sparse \
             https://github.com/supabase/supabase.git supabase-src
           cd supabase-src
+          # Include root monorepo files + studio app + packages
           git sparse-checkout set apps/studio packages
           echo "  ✓ Studio source downloaded"
 
-          # 2. Extract Studio app
-          echo "[2/4] Extracting Studio app..."
+          # 2. Extract Studio app into build context
+          echo "[2/5] Assembling build context..."
           cp -r apps/studio "$BUILD_DIR/studio"
-          cp -r packages "$BUILD_DIR/packages" 2>/dev/null || true
-          # Move packages into the studio context (needed by Dockerfile COPY)
-          cp -r "$BUILD_DIR/packages" "$BUILD_DIR/studio/packages"
-          echo "  ✓ Studio extracted"
+          # Copy monorepo root files that pnpm needs
+          cp pnpm-lock.yaml "$BUILD_DIR/studio/" 2>/dev/null || true
+          cp pnpm-workspace.yaml "$BUILD_DIR/studio/" 2>/dev/null || true
+          # Copy packages into the studio context (needed by Dockerfile COPY)
+          cp -r packages "$BUILD_DIR/studio/packages" 2>/dev/null || true
+          echo "  ✓ Build context assembled"
 
-          # 3. Clean original API routes (we route through our proxy)
-          echo "[3/4] Cleaning original API routes..."
+          # 3. Verify critical files exist
+          echo "[3/5] Verifying build context..."
+          for f in pnpm-lock.yaml pnpm-workspace.yaml package.json; do
+            if [ -f "$BUILD_DIR/studio/$f" ]; then
+              echo "  ✓ $f found"
+            else
+              echo "  ✗ $f MISSING — checking monorepo root..."
+              # pnpm-lock.yaml might not be in sparse checkout, fetch it directly
+              git show HEAD:$f > "$BUILD_DIR/studio/$f" 2>/dev/null && echo "    ✓ Fetched from git" || echo "    ✗ NOT FOUND"
+            fi
+          done
+
+          # 4. Clean original API routes (we route through our proxy)
+          echo "[4/5] Cleaning original API routes..."
           rm -rf "$BUILD_DIR/studio/pages/api"
           mkdir -p "$BUILD_DIR/studio/pages/api"
 
-          # 4. Apply SupaDash overlay files
-          echo "[4/4] Applying SupaDash patches..."
+          # 5. Apply SupaDash overlay files
+          echo "[5/5] Applying SupaDash patches..."
           OVERLAY_DIR="${GITHUB_WORKSPACE}/studio/files"
           if [ -d "$OVERLAY_DIR" ]; then
             cp -r "$OVERLAY_DIR"/* "$BUILD_DIR/studio/"
@@ -74,6 +89,9 @@ jobs:
 
           echo "=== Build context ready ==="
           ls -la "$BUILD_DIR/studio/"
+          echo "---"
+          echo "packages dir:"
+          ls "$BUILD_DIR/studio/packages/" 2>/dev/null || echo "  (none)"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
