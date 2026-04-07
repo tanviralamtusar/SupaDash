@@ -1,0 +1,107 @@
+# Build SupaDash Studio and push to GitHub Container Registry (GHCR)
+# Triggered on pushes to main that touch studio files.
+# Coolify pulls the pre-built image instead of building on the server.
+
+name: Build Studio
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio/**'
+      - '.github/workflows/build-studio.yml'
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/supadash-studio
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout SupaDash repo
+        uses: actions/checkout@v4
+
+      - name: Prepare Studio build context
+        run: |
+          set -euo pipefail
+          STUDIO_VERSION="v2026.03.04"
+          BUILD_DIR="${GITHUB_WORKSPACE}/_studio_build"
+
+          echo "=== SupaDash Studio CI Build ==="
+          echo "  Supabase Studio version: $STUDIO_VERSION"
+
+          # 1. Clone Supabase Studio (sparse checkout — only apps/studio + packages)
+          echo "[1/4] Cloning Supabase Studio $STUDIO_VERSION..."
+          mkdir -p "$BUILD_DIR"
+          cd "$BUILD_DIR"
+          git clone --depth 1 --branch "$STUDIO_VERSION" --filter=blob:none --sparse \
+            https://github.com/supabase/supabase.git supabase-src
+          cd supabase-src
+          git sparse-checkout set apps/studio packages
+          echo "  ✓ Studio source downloaded"
+
+          # 2. Extract Studio app
+          echo "[2/4] Extracting Studio app..."
+          cp -r apps/studio "$BUILD_DIR/studio"
+          cp -r packages "$BUILD_DIR/packages" 2>/dev/null || true
+          # Move packages into the studio context (needed by Dockerfile COPY)
+          cp -r "$BUILD_DIR/packages" "$BUILD_DIR/studio/packages"
+          echo "  ✓ Studio extracted"
+
+          # 3. Clean original API routes (we route through our proxy)
+          echo "[3/4] Cleaning original API routes..."
+          rm -rf "$BUILD_DIR/studio/pages/api"
+          mkdir -p "$BUILD_DIR/studio/pages/api"
+
+          # 4. Apply SupaDash overlay files
+          echo "[4/4] Applying SupaDash patches..."
+          OVERLAY_DIR="${GITHUB_WORKSPACE}/studio/files"
+          if [ -d "$OVERLAY_DIR" ]; then
+            cp -r "$OVERLAY_DIR"/* "$BUILD_DIR/studio/"
+            echo "  ✓ Patches applied"
+          else
+            echo "  ⚠ No overlay directory found"
+          fi
+
+          # Copy Dockerfile into build context
+          cp "${GITHUB_WORKSPACE}/studio/Dockerfile" "$BUILD_DIR/studio/Dockerfile"
+
+          echo "=== Build context ready ==="
+          ls -la "$BUILD_DIR/studio/"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=
+            type=raw,value={{date 'YYYY-MM-DD'}}
+
+      - name: Build and push Studio image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ github.workspace }}/_studio_build/studio
+          file: ${{ github.workspace }}/_studio_build/studio/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

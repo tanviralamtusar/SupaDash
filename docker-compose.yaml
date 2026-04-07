@@ -37,10 +37,7 @@ services:
       - 'supadash-projects:/app/projects'
 
   supadash-studio:
-    build:
-      context: ./studio
-      dockerfile: Dockerfile
-    image: supadash/studio:latest
+    image: ghcr.io/tanviralamtusar/supadash-studio:latest
     healthcheck:
       test:
         - CMD

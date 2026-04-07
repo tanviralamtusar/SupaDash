@@ -26,7 +26,7 @@ RUN if [ -d files ]; then cp -R files/* .; fi
 # Environment variables for build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-# Cap Node.js heap to prevent OOM on 16GB servers
+# Prevent OOM during Next.js build on low-memory servers
 ENV NODE_OPTIONS="--max-old-space-size=2048"
 # Skip Supabase's asset upload script (not needed for self-hosted)
 ENV SKIP_ASSET_UPLOAD=1
@@ -42,22 +42,11 @@ ENV NEXT_PUBLIC_API_URL=/api
 # Disable Sentry (not needed for self-hosted)
 ENV SENTRY_SUPPRESS_TURBOPACK_WARNING=1
 
-# Generate UI styles, then build Next.js with webpack (NOT Turbopack).
-# Turbopack's Rust workers ignore NODE_OPTIONS heap limits and OOM on <=16GB servers.
-# The --no-turbopack flag forces webpack which respects the 2048MB heap cap.
 RUN \
-  if [ -f pnpm-lock.yaml ]; then \
-    corepack enable pnpm && \
-    pnpm --filter ui run generate-styles && \
-    pnpm exec next build --no-turbopack; \
-  elif [ -f yarn.lock ]; then \
-    yarn --cwd packages/ui run generate-styles && \
-    yarn next build --no-turbopack; \
-  elif [ -f package-lock.json ]; then \
-    npm run generate-styles --prefix packages/ui && \
-    npx next build --no-turbopack; \
-  else \
-    npx next build --no-turbopack; \
+  if [ -f yarn.lock ]; then yarn --cwd packages/ui run generate-styles && yarn build; \
+  elif [ -f package-lock.json ]; then npm run generate-styles --prefix packages/ui && npm run build; \
+  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm --filter ui run generate-styles && pnpm build; \
+  else npm run build; \
   fi
 
 # Production
