@@ -37,60 +37,49 @@ jobs:
           echo "=== SupaDash Studio CI Build ==="
           echo "  Supabase Studio version: $STUDIO_VERSION"
 
-          # 1. Clone Supabase monorepo (sparse checkout — source code only)
-          echo "[1/5] Cloning Supabase Studio $STUDIO_VERSION..."
+          # 1. Clone upstream Supabase Studio source code
+          echo "[1/4] Cloning Supabase Studio $STUDIO_VERSION..."
           mkdir -p "$BUILD_DIR"
           cd "$BUILD_DIR"
           git clone --depth 1 --branch "$STUDIO_VERSION" --filter=blob:none --sparse \
             https://github.com/supabase/supabase.git supabase-src
           cd supabase-src
-          git sparse-checkout set apps/studio packages
+          git sparse-checkout set apps/studio
           echo "  ✓ Studio source downloaded"
 
-          # 2. Assemble build context from upstream source + SupaDash config
-          echo "[2/5] Assembling build context..."
-          # Start with the upstream Studio source code
+          # 2. Assemble build context
+          echo "[2/4] Assembling build context..."
+          # Start with upstream Studio source code
           cp -r apps/studio "$BUILD_DIR/studio"
-          # Copy upstream shared packages
-          cp -r packages "$BUILD_DIR/studio/packages" 2>/dev/null || true
 
-          # Use SupaDash repo's own lockfile & workspace config (NOT the monorepo root's!)
-          # These are tailored for the flattened structure: '.' + 'packages/*'
+          # Use SupaDash repo's own packages (with pre-built CSS artifacts),
+          # lockfile, and workspace config — NOT from upstream monorepo.
+          # The repo's packages/ includes ui/build/css/ which is pre-generated.
+          cp -r "$SUPADASH_STUDIO/packages" "$BUILD_DIR/studio/packages"
           cp "$SUPADASH_STUDIO/pnpm-lock.yaml" "$BUILD_DIR/studio/pnpm-lock.yaml"
           cp "$SUPADASH_STUDIO/pnpm-workspace.yaml" "$BUILD_DIR/studio/pnpm-workspace.yaml"
-          echo "  ✓ Build context assembled (using SupaDash lockfile)"
+          echo "  ✓ Build context assembled"
 
-          # 3. Clean original API routes (we route through our proxy)
-          echo "[3/5] Cleaning original API routes..."
+          # 3. Clean original API routes & apply SupaDash patches
+          echo "[3/4] Applying SupaDash patches..."
           rm -rf "$BUILD_DIR/studio/pages/api"
           mkdir -p "$BUILD_DIR/studio/pages/api"
-
-          # 4. Apply SupaDash overlay files (patches)
-          echo "[4/5] Applying SupaDash patches..."
           if [ -d "$SUPADASH_STUDIO/files" ]; then
             cp -r "$SUPADASH_STUDIO/files"/* "$BUILD_DIR/studio/"
             echo "  ✓ Patches applied"
-          else
-            echo "  ⚠ No overlay directory found"
           fi
 
-          # 5. Copy Dockerfile and verify
-          echo "[5/5] Final verification..."
+          # 4. Copy Dockerfile & verify
+          echo "[4/4] Final verification..."
           cp "$SUPADASH_STUDIO/Dockerfile" "$BUILD_DIR/studio/Dockerfile"
+          cp "$SUPADASH_STUDIO/.dockerignore" "$BUILD_DIR/studio/.dockerignore"
 
-          # Verify critical files
           for f in pnpm-lock.yaml pnpm-workspace.yaml package.json; do
-            if [ -f "$BUILD_DIR/studio/$f" ]; then
-              echo "  ✓ $f"
-            else
-              echo "  ✗ $f MISSING" && exit 1
-            fi
+            [ -f "$BUILD_DIR/studio/$f" ] && echo "  ✓ $f" || { echo "  ✗ $f MISSING"; exit 1; }
           done
+          [ -d "$BUILD_DIR/studio/packages/ui/build/css" ] && echo "  ✓ packages/ui/build/css (pre-built)" || echo "  ⚠ packages/ui/build/css missing"
 
           echo "=== Build context ready ==="
-          ls -la "$BUILD_DIR/studio/"
-          echo "--- workspace config ---"
-          cat "$BUILD_DIR/studio/pnpm-workspace.yaml" | head -5
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

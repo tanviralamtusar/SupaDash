@@ -43,11 +43,13 @@ ENV NEXT_PUBLIC_API_URL=/api
 ENV SENTRY_SUPPRESS_TURBOPACK_WARNING=1
 
 RUN \
-  if [ -f yarn.lock ]; then yarn --cwd packages/ui run generate-styles && yarn build; \
-  elif [ -f package-lock.json ]; then npm run generate-styles --prefix packages/ui && npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm --filter ui run generate-styles && pnpm build; \
-  else npm run build; \
-  fi
+  corepack enable pnpm && \
+  if [ -d packages/ui/build/css ]; then \
+    echo "✓ Pre-built styles found, skipping generate-styles"; \
+  else \
+    echo "Generating styles..." && pnpm --filter ui run generate-styles; \
+  fi && \
+  pnpm build
 
 # Production
 FROM base AS runner
