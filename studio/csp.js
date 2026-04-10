@@ -1,6 +1,8 @@
+const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
 function safeOrigin(urlStr) {
   if (!urlStr) return ''
-  try { return new URL(urlStr).origin } catch { return '' }
+  try { return new URL(urlStr, base).origin } catch { return '' }
 }
 
 const API_URL = safeOrigin(process.env.NEXT_PUBLIC_API_URL)

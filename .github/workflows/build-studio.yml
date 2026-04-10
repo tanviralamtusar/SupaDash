@@ -69,10 +69,13 @@ jobs:
             echo "  ✓ Patches applied"
           fi
 
-          # 4. Copy Dockerfile & verify
+          # 4. Copy Dockerfile, configs & verify
           echo "[4/4] Final verification..."
           cp "$SUPADASH_STUDIO/Dockerfile" "$BUILD_DIR/studio/Dockerfile"
           cp "$SUPADASH_STUDIO/.dockerignore" "$BUILD_DIR/studio/.dockerignore"
+          cp "$SUPADASH_STUDIO/next.config.js" "$BUILD_DIR/studio/next.config.js"
+          cp "$SUPADASH_STUDIO/csp.js" "$BUILD_DIR/studio/csp.js"
+          cp "$SUPADASH_STUDIO/package.json" "$BUILD_DIR/studio/package.json"
 
           for f in pnpm-lock.yaml pnpm-workspace.yaml package.json; do
             [ -f "$BUILD_DIR/studio/$f" ] && echo "  ✓ $f" || { echo "  ✗ $f MISSING"; exit 1; }
