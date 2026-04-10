@@ -22,16 +22,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const options: RequestInit = {
     method: req.method,
     headers: {
-      ...req.headers,
+      ...req.headers as any,
       host: undefined, // Let Node/fetch set the host header natively
-    } as Record<string, string | undefined>,
+    } as any,
   }
 
   // Next.js body parser already parsed req.body, so we stringify it back
   if (req.method !== 'GET' && req.method !== 'HEAD' && req.body) {
     if (typeof req.body === 'object') {
       options.body = JSON.stringify(req.body)
-      const headers = options.headers as Record<string, string | undefined>
+      const headers = options.headers as any
       // Ensure content-type is application/json if we stringified it
       if (!headers['content-type']) {
         headers['content-type'] = 'application/json'

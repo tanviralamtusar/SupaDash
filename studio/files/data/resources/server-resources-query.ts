@@ -36,14 +36,15 @@ export async function getServerCapacity(signal?: AbortSignal) {
 export type ServerCapacityData = Awaited<ReturnType<typeof getServerCapacity>>
 
 export const useServerCapacityQuery = <TData = ServerCapacityData>(
-  options: UseQueryOptions<ServerCapacityData, ResponseError, TData> = {}
-) =>
-  useQuery<ServerCapacityData, ResponseError, TData>(
-    ['server-capacity'],
-    ({ signal }) => getServerCapacity(signal),
-    {
-      staleTime: 10 * 1000,
-      refetchInterval: 10 * 1000,
-      ...options,
-    }
-  )
+  options: UseQueryOptions<ServerCapacityData, ResponseError, TData> = {} as any
+) => {
+  const { queryKey, ...otherOptions } = options
+
+  return useQuery<ServerCapacityData, ResponseError, TData>({
+    queryKey: ['server-capacity', ...(queryKey as any || [])],
+    queryFn: ({ signal }) => getServerCapacity(signal),
+    staleTime: 10 * 1000,
+    refetchInterval: 10 * 1000,
+    ...otherOptions,
+  })
+}

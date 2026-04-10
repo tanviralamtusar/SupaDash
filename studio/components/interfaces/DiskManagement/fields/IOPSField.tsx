@@ -1,6 +1,6 @@
 import { UseFormReturn } from 'react-hook-form'
 
-import { InputVariants } from '@ui/components/shadcn/ui/input'
+import { InputVariants } from '../../../../packages/ui/src/components/shadcn/ui/input'
 import { useParams } from 'common'
 import { useDiskAttributesQuery } from 'data/config/disk-attributes-query'
 import { Button, cn, FormControl_Shadcn_, FormField_Shadcn_, Input_Shadcn_, Skeleton } from 'ui'

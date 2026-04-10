@@ -111,7 +111,7 @@ export const HelpOptionsList = ({
                 asChild
               >
                 <a href={STATUS_URL} target="_blank" rel="noreferrer">
-                  SupaDash status
+                  SupaDash Status
                 </a>
               </ButtonGroupItem>
             )
@@ -124,7 +124,7 @@ export const HelpOptionsList = ({
                 asChild
               >
                 <SupportLink queryParams={supportLinkQueryParams} onClick={onSupportClick}>
-                  Contact support
+                  Contact Support
                 </SupportLink>
               </ButtonGroupItem>
             )

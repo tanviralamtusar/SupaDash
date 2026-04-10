@@ -3,8 +3,8 @@ import type { Route } from 'components/ui/ui.types'
 import { EditorIndexPageLink } from 'data/prefetchers/project.$ref.editor'
 import type { Project } from 'data/projects/project-detail-query'
 import { Auth, Database, EdgeFunctions, Realtime, SqlEditor, Storage, TableEditor } from 'icons'
-import { IS_PLATFORM, PROJECT_STATUS } from 'lib/constants'
-import { Blocks, FileText, Lightbulb, List, Settings, Telescope } from 'lucide-react'
+import { PROJECT_STATUS } from 'lib/constants'
+import { Blocks, Cpu, FileText, Lightbulb, List, Settings, Telescope } from 'lucide-react'
 
 interface RouteContext {
   ref?: string
@@ -78,6 +78,13 @@ export const generateProductRoutes = (
 
   return [
     {
+      key: 'resources',
+      label: 'Resources',
+      disabled: !isProjectActive,
+      icon: <Cpu size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
+      link: ref && (isProjectBuilding ? buildingUrl : `/project/${ref}/resources`),
+    },
+    {
       key: 'database',
       label: 'Database',
       disabled: !isProjectActive,
@@ -150,7 +157,7 @@ export const generateOtherRoutes = (
 ): Route[] => {
   const { isProjectActive, isProjectBuilding, buildingUrl } = getRouteContext(ref, project)
 
-  const isPlatform = features?.isPlatform ?? IS_PLATFORM
+  const isPlatform = features?.isPlatform ?? true
   const unifiedLogsEnabled = features?.unifiedLogs ?? false
   const reportsEnabled = features?.showReports ?? true
   const apiDocsSidePanelEnabled = features?.apiDocsSidePanel ?? false
@@ -206,7 +213,7 @@ export const generateOtherRoutes = (
 }
 
 export const generateSettingsRoutes = (ref?: string, features?: SettingsFeatures): Route[] => {
-  const isPlatform = features?.isPlatform ?? IS_PLATFORM
+  const isPlatform = features?.isPlatform ?? true
 
   return [
     {

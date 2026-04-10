@@ -1,76 +1,72 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import { handleError, put } from 'data/fetchers'
-import { organizationKeys as organizationKeysV1 } from 'data/organizations/keys'
+import { put, handleError } from 'data/fetchers'
 import type { ResponseError, UseCustomMutationOptions } from 'types'
-import { organizationKeys } from './keys'
+import { organizationKeys } from '../organizations/keys'
 
-export type OrganizationMemberUpdateRoleVariables = {
+export type OrganizationMemberRoleUpdateVariables = {
   slug: string
   gotrueId: string
   roleId: number
-  roleName: string
-  projects: string[]
   skipInvalidation?: boolean
 }
 
-export async function assignOrganizationMemberRole({
+// Map Studio numeric role IDs back to SupaDash Go backend strings
+const ROLE_NAME_MAP: Record<number, string> = {
+  1: 'owner',
+  2: 'admin',
+  3: 'developer',
+  4: 'viewer',
+}
+
+export async function updateOrganizationMemberRole({
   slug,
   gotrueId,
   roleId,
-  roleName,
-  projects,
-}: OrganizationMemberUpdateRoleVariables) {
-  const { data, error } = await put(
-    '/platform/organizations/{slug}/members/{gotrue_id}/roles/{role_id}',
-    {
-      params: { path: { slug, gotrue_id: gotrueId, role_id: roleId } },
-      body: { name: roleName, role_scoped_projects: projects },
-    }
-  )
-
+}: OrganizationMemberRoleUpdateVariables) {
+  const { data, error } = await put('/organizations/{slug}/team/{id}' as any, {
+    params: { path: { slug, id: gotrueId } },
+    body: {
+      role: ROLE_NAME_MAP[roleId] || 'developer',
+    },
+  })
   if (error) handleError(error)
   return data
 }
 
-type OrganizationMemberAssignData = Awaited<ReturnType<typeof assignOrganizationMemberRole>>
+type OrganizationMemberRoleUpdateData = Awaited<ReturnType<typeof updateOrganizationMemberRole>>
 
-export const useOrganizationMemberUpdateRoleMutation = ({
+export const useOrganizationMemberRoleUpdateMutation = ({
   onSuccess,
   onError,
   ...options
 }: Omit<
   UseCustomMutationOptions<
-    OrganizationMemberAssignData,
+    OrganizationMemberRoleUpdateData,
     ResponseError,
-    OrganizationMemberUpdateRoleVariables
+    OrganizationMemberRoleUpdateVariables
   >,
   'mutationFn'
 > = {}) => {
   const queryClient = useQueryClient()
 
   return useMutation<
-    OrganizationMemberAssignData,
+    OrganizationMemberRoleUpdateData,
     ResponseError,
-    OrganizationMemberUpdateRoleVariables
+    OrganizationMemberRoleUpdateVariables
   >({
-    mutationFn: (vars) => assignOrganizationMemberRole(vars),
+    mutationFn: (vars) => updateOrganizationMemberRole(vars),
     async onSuccess(data, variables, context) {
       const { slug, skipInvalidation } = variables
-
       if (!skipInvalidation) {
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: organizationKeys.rolesV2(slug) }),
-          queryClient.invalidateQueries({ queryKey: organizationKeysV1.members(slug) }),
-        ])
+        await queryClient.invalidateQueries({ queryKey: organizationKeys.members(slug) })
       }
-
       await onSuccess?.(data, variables, context)
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update member role: ${data.message}`)
+        toast.error(`Failed to update role: ${data.message}`)
       } else {
         onError(data, variables, context)
       }

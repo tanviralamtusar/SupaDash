@@ -21,7 +21,7 @@ interface PartnerManagedResourceProps {
 export const PARTNER_TO_NAME = {
   [MANAGED_BY.VERCEL_MARKETPLACE]: 'Vercel Marketplace',
   [MANAGED_BY.AWS_MARKETPLACE]: 'AWS Marketplace',
-  [MANAGED_BY.SUPABASE]: 'Supabase',
+  [MANAGED_BY.SUPADASH]: 'SupaDash',
 } as const
 
 function PartnerManagedResource({ managedBy, resource, cta }: PartnerManagedResourceProps) {
@@ -46,7 +46,7 @@ function PartnerManagedResource({ managedBy, resource, cta }: PartnerManagedReso
     }
   )
 
-  if (managedBy === MANAGED_BY.SUPABASE) return null
+  if (managedBy === MANAGED_BY.SUPADASH) return null
 
   const { data, isLoading, isError } =
     managedBy === MANAGED_BY.VERCEL_MARKETPLACE ? vercelQuery : awsQuery

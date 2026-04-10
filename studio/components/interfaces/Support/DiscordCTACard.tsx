@@ -53,7 +53,7 @@ export const DiscordCTACard = ({ organizationSlug }: DiscordCTACardProps) => {
             <div className="relative z-10">
               <div className="flex flex-col gap-3">
                 <div>
-                  <h5 className="text-sm font-medium text-white">Ask the Discord community</h5>
+                  <h5 className="text-sm font-medium text-white">Ask the Discord Community</h5>
                   <p className="text-sm text-white/75">
                     Many code-related questions are answered within minutes.
                   </p>

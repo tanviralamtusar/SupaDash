@@ -1,41 +1,41 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import { components } from 'api-types'
-import { handleError, post } from 'data/fetchers'
-import { organizationKeys as organizationKeysV1 } from 'data/organizations/keys'
+import { post, handleError } from 'data/fetchers'
 import type { ResponseError, UseCustomMutationOptions } from 'types'
-import { organizationKeys } from './keys'
+import { organizationKeys } from '../organizations/keys'
 
-export type OrganizationCreateInvitationVariables = {
+export type OrganizationInvitationCreateVariables = {
   slug: string
   email: string
   roleId: number
-  projects?: string[]
-  requireSso?: boolean
+}
+
+// Map Studio numeric role IDs back to SupaDash Go backend strings
+const ROLE_NAME_MAP: Record<number, string> = {
+  1: 'owner',
+  2: 'admin',
+  3: 'developer',
+  4: 'viewer',
 }
 
 export async function createOrganizationInvitation({
   slug,
   email,
   roleId,
-  projects,
-  requireSso,
-}: OrganizationCreateInvitationVariables) {
-  const payload: components['schemas']['CreateInvitationBody'] = { email, role_id: roleId }
-  if (projects !== undefined) payload.role_scoped_projects = projects
-  if (requireSso !== undefined) payload.require_sso = requireSso
-
-  const { data, error } = await post('/platform/organizations/{slug}/members/invitations', {
+}: OrganizationInvitationCreateVariables) {
+  const { data, error } = await post('/organizations/{slug}/team/invite' as any, {
     params: { path: { slug } },
-    body: payload,
+    body: {
+      email,
+      role: ROLE_NAME_MAP[roleId] || 'developer',
+    },
   })
-
   if (error) handleError(error)
   return data
 }
 
-type OrganizationMemberUpdateData = Awaited<ReturnType<typeof createOrganizationInvitation>>
+type OrganizationInvitationCreateData = Awaited<ReturnType<typeof createOrganizationInvitation>>
 
 export const useOrganizationCreateInvitationMutation = ({
   onSuccess,
@@ -43,33 +43,28 @@ export const useOrganizationCreateInvitationMutation = ({
   ...options
 }: Omit<
   UseCustomMutationOptions<
-    OrganizationMemberUpdateData,
+    OrganizationInvitationCreateData,
     ResponseError,
-    OrganizationCreateInvitationVariables
+    OrganizationInvitationCreateVariables
   >,
   'mutationFn'
 > = {}) => {
   const queryClient = useQueryClient()
 
   return useMutation<
-    OrganizationMemberUpdateData,
+    OrganizationInvitationCreateData,
     ResponseError,
-    OrganizationCreateInvitationVariables
+    OrganizationInvitationCreateVariables
   >({
     mutationFn: (vars) => createOrganizationInvitation(vars),
     async onSuccess(data, variables, context) {
       const { slug } = variables
-
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: organizationKeys.rolesV2(slug) }),
-        queryClient.invalidateQueries({ queryKey: organizationKeysV1.members(slug) }),
-      ])
-
+      await queryClient.invalidateQueries({ queryKey: organizationKeys.members(slug) })
       await onSuccess?.(data, variables, context)
     },
     async onError(data, variables, context) {
       if (onError === undefined) {
-        toast.error(`Failed to update member role: ${data.message}`)
+        toast.error(`Failed to send invitation: ${data.message}`)
       } else {
         onError(data, variables, context)
       }

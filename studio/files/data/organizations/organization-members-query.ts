@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import type { components } from 'data/api'
+import type { components } from 'api-types'
 import { get, handleError } from 'data/fetchers'
 import type { ResponseError, UseCustomQueryOptions } from 'types'
 import { organizationKeys } from './keys'
@@ -47,7 +47,7 @@ export async function getOrganizationMembers(
     // so we just return them all as members for now.
   }))
 
-  return orgMembers as OrganizationMember[]
+  return orgMembers as unknown as OrganizationMember[]
 }
 
 export type OrganizationMembersData = Awaited<ReturnType<typeof getOrganizationMembers>>

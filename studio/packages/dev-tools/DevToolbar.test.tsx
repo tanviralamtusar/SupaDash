@@ -23,8 +23,6 @@ vi.mock('common', async () => {
   }
 })
 
-const originalEnv = process.env.NODE_ENV
-
 /**
  * Helper to render the full component tree as used in production.
  * The Provider sets up window.devTelemetry and manages state.
@@ -76,14 +74,14 @@ describe('DevToolbar', () => {
   })
 
   afterEach(() => {
-    process.env.NODE_ENV = originalEnv
+    vi.unstubAllEnvs()
     vi.resetModules()
     vi.restoreAllMocks()
   })
 
   describe('when not in local development', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'production'
+      vi.stubEnv('NODE_ENV', 'production')
     })
 
     it('returns null and does not render anything', async () => {
@@ -104,7 +102,7 @@ describe('DevToolbar', () => {
 
   describe('when in local development but not enabled', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
     })
 
     it('does not render trigger when toolbar is not enabled', async () => {
@@ -126,7 +124,7 @@ describe('DevToolbar', () => {
 
   describe('when in local development and enabled', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
       localStorage.setItem('dev-telemetry-toolbar-enabled', 'true')
     })
 
@@ -183,7 +181,7 @@ describe('DevToolbar', () => {
 
   describe('window.devTelemetry function', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
     })
 
     it('enables toolbar when called', async () => {
@@ -217,7 +215,7 @@ describe('DevToolbar', () => {
 
   describe('cleanup', () => {
     it('removes window.devTelemetry on unmount', async () => {
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
 
       vi.resetModules()
       const result = await renderFullToolbar()
@@ -232,7 +230,7 @@ describe('DevToolbar', () => {
 
   describe('EventCard keyboard accessibility', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
       localStorage.setItem('dev-telemetry-toolbar-enabled', 'true')
     })
 
@@ -256,7 +254,7 @@ describe('DevToolbar', () => {
 
   describe('Flag override UI', () => {
     beforeEach(() => {
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
       localStorage.setItem('dev-telemetry-toolbar-enabled', 'true')
     })
 
@@ -287,7 +285,7 @@ describe('DevToolbar', () => {
 describe('DevToolbar utils', () => {
   describe('safeJsonParse', () => {
     it('logs warning for invalid JSON in local environment', async () => {
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
       const consoleSpy = vi.spyOn(console, 'warn')
 
       vi.resetModules()

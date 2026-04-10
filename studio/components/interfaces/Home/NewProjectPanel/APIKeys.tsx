@@ -76,7 +76,7 @@ export const APIKeys = () => {
         <CardDescription>
           Your API is secured behind an API gateway which requires an API Key for every request.
           <br />
-          You can use the parameters below to use Supabase client libraries.
+          You can use the parameters below to use SupaDash client libraries.
         </CardDescription>
       </CardHeader>
 

@@ -48,7 +48,7 @@ export function useRealtime() {
         } else if (message.type === 'stats') {
           // Update stats in cache if there's a specific query for it
           // For now, we mainly want to trigger a refresh of the resource usage charts if they are visible
-          queryClient.invalidateQueries(['projects', projectRef, 'resource-usage'])
+          queryClient.invalidateQueries({ queryKey: ['projects', projectRef, 'resource-usage'] })
           // Also set data directly if we want instant feedback
           queryClient.setQueryData(['projects', projectRef, 'realtime-stats', message.data.service_name], message.data)
         }

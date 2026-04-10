@@ -1,6 +1,6 @@
 import { UseFormReturn } from 'react-hook-form'
 
-import { InputVariants } from '@ui/components/shadcn/ui/input'
+import { InputVariants } from '../../../../packages/ui/src/components/shadcn/ui/input'
 import { useParams } from 'common'
 import { DocsButton } from 'components/ui/DocsButton'
 import { useDiskAttributesQuery } from 'data/config/disk-attributes-query'

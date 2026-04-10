@@ -2,6 +2,15 @@ import { codeBlock } from 'common-tags'
 import OpenAI from 'openai'
 import { expect } from 'vitest'
 
+interface CustomMatchers<R = unknown> {
+  toMatchCriteria(criteria: string): Promise<R>
+}
+
+declare module 'vitest' {
+  interface Assertion<T = any> extends CustomMatchers<T> {}
+  interface AsymmetricMatchersContaining extends CustomMatchers {}
+}
+
 expect.extend({
   async toMatchCriteria(received: string, criteria: string) {
     const openAiKey = process.env.OPENAI_API_KEY

@@ -4,7 +4,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-import { InputVariants } from '@ui/components/shadcn/ui/input'
+import { InputVariants } from '../../../packages/ui/src/components/shadcn/ui/input'
 import { useParams } from 'common'
 import CopyButton from 'components/ui/CopyButton'
 import { useAPIKeyIdQuery } from 'data/api-keys/api-key-id-query'

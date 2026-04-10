@@ -1,7 +1,7 @@
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import Head from 'next/head'
 import { useCallback, useEffect, useState } from 'react'
-import { NewOrgForm } from 'components/interfaces/Organization/NewOrg/NewOrgForm'
+import NewOrgForm from 'components/interfaces/Organization/NewOrg/NewOrgForm'
 import { AppLayout } from 'components/layouts/AppLayout/AppLayout'
 import { DefaultLayout } from 'components/layouts/DefaultLayout'
 import WizardLayout from 'components/layouts/WizardLayout'
@@ -101,9 +101,7 @@ const Wizard: NextPageWithLayout = () => {
       />
 
       <NewOrgForm
-        setupIntent={intent}
         onPaymentMethodReset={() => resetSetupIntent()}
-        onPlanSelected={(plan) => setSelectedPlan(plan)}
       />
     </>
   )

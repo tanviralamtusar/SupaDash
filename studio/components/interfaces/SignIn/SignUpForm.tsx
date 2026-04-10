@@ -133,7 +133,7 @@ export const SignUpForm = () => {
             <AlertDescription_Shadcn_ className="text-xs">
               You've successfully signed up. Please check your email to confirm your account before
               signing in to the SupaDash dashboard. The confirmation link expires in 10 minutes.
-            </AlertDescription_Shadcn_>
+              </AlertDescription_Shadcn_>
           </Alert_Shadcn_>
         </motion.div>
       )}

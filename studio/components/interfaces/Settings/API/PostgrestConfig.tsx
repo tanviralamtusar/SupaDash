@@ -51,7 +51,7 @@ import { useAsyncCheckPermissions } from '@/hooks/misc/useCheckPermissions'
 import { useDataApiGrantTogglesEnabled } from '@/hooks/misc/useDataApiGrantTogglesEnabled'
 import useLatest from '@/hooks/misc/useLatest'
 import { useSelectedProjectQuery } from '@/hooks/misc/useSelectedProject'
-import { IS_PLATFORM } from '@/lib/constants'
+
 import { INTERNAL_SCHEMAS } from '@/hooks/useProtectedSchemas'
 import { noop } from '@/lib/void'
 import type { ResponseError } from '@/types'
@@ -155,7 +155,7 @@ export const PostgrestConfig = () => {
 
   const { can: canUpdatePostgrestConfigPermission, isSuccess: isPermissionsLoaded } =
     useAsyncCheckPermissions(PermissionAction.UPDATE, 'custom_config_postgrest')
-  const canUpdatePostgrestConfig = IS_PLATFORM && canUpdatePostgrestConfigPermission
+  const canUpdatePostgrestConfig = canUpdatePostgrestConfigPermission
 
   const isGraphqlExtensionEnabled =
     (extensions ?? []).find((ext) => ext.name === 'pg_graphql')?.installed_version !== null
@@ -660,8 +660,7 @@ export const PostgrestConfig = () => {
               )}
             </form>
           </Form_Shadcn_>
-          {IS_PLATFORM && (
-            <CardFooter className="border-t">
+          <CardFooter className="border-t">
               <FormActions
                 form={formId}
                 isSubmitting={isUpdating}
@@ -675,10 +674,8 @@ export const PostgrestConfig = () => {
                 }
               />
             </CardFooter>
-          )}
         </Card>
-        {IS_PLATFORM && (
-          <Card className="mb-4">
+        <Card className="mb-4">
             <CardContent>
               <FormItemLayout
                 isReactForm={false}
@@ -694,10 +691,9 @@ export const PostgrestConfig = () => {
               </FormItemLayout>
             </CardContent>
           </Card>
-        )}
       </PageSectionContent>
 
-      {IS_PLATFORM && <HardenAPIModal visible={showModal} onClose={() => setShowModal(false)} />}
+      <HardenAPIModal visible={showModal} onClose={() => setShowModal(false)} />
     </PageSection>
   )
 }

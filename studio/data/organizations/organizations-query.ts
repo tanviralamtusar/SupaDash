@@ -25,7 +25,7 @@ function getManagedBy(org: OrganizationBase): ManagedBy {
     case 'aws_marketplace':
       return MANAGED_BY.AWS_MARKETPLACE
     default:
-      return MANAGED_BY.SUPABASE
+      return MANAGED_BY.SUPADASH
   }
 }
 

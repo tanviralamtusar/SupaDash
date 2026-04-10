@@ -3,6 +3,7 @@ import OpenAI from 'openai'
 import { describe, expect, test } from 'vitest'
 
 import { formatSql } from '../../test/util'
+import '../../test/extensions'
 import { debugSql, titleSql } from './functions'
 
 const openAiKey = process.env.OPENAI_API_KEY

@@ -129,8 +129,7 @@ export const MemberActions = ({ member }: MemberActionsProps) => {
             inviteMember({
               slug,
               email: member.primary_email,
-              roleId: projectScopedRole.base_role_id,
-              projects,
+              roleId: projectScopedRole.base_role_id as number,
             })
           } else {
             inviteMember({ slug, email: member.primary_email, roleId })

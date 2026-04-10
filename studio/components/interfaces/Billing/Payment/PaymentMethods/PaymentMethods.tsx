@@ -67,7 +67,7 @@ const PaymentMethods = () => {
         </ScaffoldSectionDetail>
         <ScaffoldSectionContent>
           {selectedOrganization?.managed_by !== undefined &&
-          selectedOrganization?.managed_by !== MANAGED_BY.SUPABASE ? (
+          selectedOrganization?.managed_by !== MANAGED_BY.SUPADASH ? (
             <PartnerManagedResource
               managedBy={selectedOrganization?.managed_by}
               resource="Payment Methods"

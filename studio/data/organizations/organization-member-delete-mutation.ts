@@ -14,8 +14,8 @@ export async function deleteOrganizationMember({
   slug,
   gotrueId,
 }: OrganizationMemberDeleteVariables) {
-  const { data, error } = await del('/platform/organizations/{slug}/members/{gotrue_id}', {
-    params: { path: { slug, gotrue_id: gotrueId } },
+  const { data, error } = await del('/organizations/{slug}/team/{id}' as any, {
+    params: { path: { slug, id: gotrueId } },
   })
   if (error) handleError(error)
   return data
@@ -48,7 +48,6 @@ export const useOrganizationMemberDeleteMutation = ({
 
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: organizationKeys.members(slug) }),
-        queryClient.invalidateQueries({ queryKey: organizationKeys.roles(slug) }),
       ])
 
       await onSuccess?.(data, variables, context)

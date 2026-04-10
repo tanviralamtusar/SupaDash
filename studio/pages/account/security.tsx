@@ -90,7 +90,7 @@ const Security: NextPageWithLayout = () => {
       }
       
       // Success! Refetch profile to update UI
-      await queryClient.invalidateQueries(profileKeys.profile())
+      await queryClient.invalidateQueries({ queryKey: profileKeys.profile() })
       setSetupData(null)
       setTotpCode('')
     } catch (err: any) {
@@ -111,7 +111,7 @@ const Security: NextPageWithLayout = () => {
       if (!res.ok) {
         throw new Error('Failed to disable 2FA')
       }
-      await queryClient.invalidateQueries(profileKeys.profile())
+      await queryClient.invalidateQueries({ queryKey: profileKeys.profile() })
     } catch (err: any) {
       setErrorMsg(err.message)
     } finally {
@@ -165,7 +165,7 @@ const Security: NextPageWithLayout = () => {
                   </p>
                 </div>
                 <div className="flex border-t border-default pt-6 justify-end">
-                  <Button type="default" danger onClick={handleDisable} loading={isDisabling}>
+                  <Button type="danger" onClick={handleDisable} loading={isDisabling}>
                     Disable 2FA
                   </Button>
                 </div>

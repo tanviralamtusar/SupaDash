@@ -5,21 +5,18 @@ import { LOCAL_STORAGE_KEYS, useFlag, useParams } from 'common'
 import { AUTO_ENABLE_RLS_EVENT_TRIGGER_SQL } from 'components/interfaces/Database/Triggers/EventTriggersList/EventTriggers.constants'
 import { AdvancedConfiguration } from 'components/interfaces/ProjectCreation/AdvancedConfiguration'
 import { CloudProviderSelector } from 'components/interfaces/ProjectCreation/CloudProviderSelector'
-import { ComputeSizeSelector } from 'components/interfaces/ProjectCreation/ComputeSizeSelector'
 import { CustomPostgresVersionInput } from 'components/interfaces/ProjectCreation/CustomPostgresVersionInput'
 import { DatabasePasswordInput } from 'components/interfaces/ProjectCreation/DatabasePasswordInput'
 import { DisabledWarningDueToIncident } from 'components/interfaces/ProjectCreation/DisabledWarningDueToIncident'
-import { FreeProjectLimitWarning } from 'components/interfaces/ProjectCreation/FreeProjectLimitWarning'
 import { HighAvailabilityInput } from 'components/interfaces/ProjectCreation/HighAvailabilityInput'
 import { OrganizationSelector } from 'components/interfaces/ProjectCreation/OrganizationSelector'
 import {
   extractPostgresVersionDetails,
   PostgresVersionSelector,
 } from 'components/interfaces/ProjectCreation/PostgresVersionSelector'
-import { sizes } from 'components/interfaces/ProjectCreation/ProjectCreation.constants'
+
 import { FormSchema } from 'components/interfaces/ProjectCreation/ProjectCreation.schema'
 import {
-  instanceLabel,
   smartRegionToExactRegion,
 } from 'components/interfaces/ProjectCreation/ProjectCreation.utils'
 import { ProjectCreationFooter } from 'components/interfaces/ProjectCreation/ProjectCreationFooter'
@@ -30,14 +27,11 @@ import DefaultLayout from 'components/layouts/DefaultLayout'
 import { WizardLayoutWithoutAuth } from 'components/layouts/WizardLayout'
 import Panel from 'components/ui/Panel'
 import { useAvailableOrioleImageVersion } from 'data/config/project-creation-postgres-versions-query'
-import { useOverdueInvoicesQuery } from 'data/invoices/invoices-overdue-query'
 import { useDefaultRegionQuery } from 'data/misc/get-default-region-query'
-import { useAuthorizedAppsQuery } from 'data/oauth/authorized-apps-query'
-import { useFreeProjectLimitCheckQuery } from 'data/organizations/free-project-limit-check-query'
+
 import { useOrganizationAvailableRegionsQuery } from 'data/organizations/organization-available-regions-query'
 import { useOrganizationsQuery } from 'data/organizations/organizations-query'
-import { DesiredInstanceSize, instanceSizeSpecs } from 'data/projects/new-project.constants'
-import { OrgProject, useOrgProjectsInfiniteQuery } from 'data/projects/org-projects-infinite-query'
+import { DesiredInstanceSize } from 'data/projects/new-project.constants'
 import {
   ProjectCreateVariables,
   useProjectCreateMutation,
@@ -57,17 +51,16 @@ import { useTrack } from 'lib/telemetry/track'
 import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { PropsWithChildren, useEffect, useMemo, useState } from 'react'
+import { PropsWithChildren, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { AWS_REGIONS, type CloudProvider } from 'shared-data'
 import { toast } from 'sonner'
 import type { NextPageWithLayout } from 'types'
 import { Button, Form_Shadcn_, FormField_Shadcn_, useWatch_Shadcn_ } from 'ui'
-import { Admonition } from 'ui-patterns/admonition'
-import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
+
 import { z } from 'zod'
 
-const sizesWithNoCostConfirmationRequired: DesiredInstanceSize[] = ['micro', 'small']
+
 
 const Wizard: NextPageWithLayout = () => {
   const track = useTrack()
@@ -82,9 +75,7 @@ const Wizard: NextPageWithLayout = () => {
   })
 
   const { data: currentOrg } = useSelectedOrganizationQuery()
-  const isFreePlan = currentOrg?.plan?.id === 'free'
-  const canChooseInstanceSize = !isFreePlan
-
+  const isFreePlan = false // SupaDash self-hosted: no billing tiers
   const [lastVisitedOrganization] = useLocalStorageQuery(
     LOCAL_STORAGE_KEYS.LAST_VISITED_ORGANIZATION,
     ''
@@ -102,8 +93,7 @@ const Wizard: NextPageWithLayout = () => {
   // undefined (omitted from PostHog) so we only record true/false when the flag is resolved.
   const tableEditorApiAccessToggleFlag = usePHFlag<boolean>('tableEditorApiAccessToggle')
 
-  const showNonProdFields = process.env.NEXT_PUBLIC_ENVIRONMENT !== 'prod'
-  const isNotOnHigherPlan = !['team', 'enterprise', 'platform'].includes(currentOrg?.plan.id ?? '')
+  const showNonProdFields = true // SupaDash: always show postgres version etc.
 
   // This is to make the database.new redirect work correctly. The database.new redirect should be set to supadash.io/dashboard/new/last-visited-org
   if (slug === 'last-visited-org') {
@@ -114,9 +104,6 @@ const Wizard: NextPageWithLayout = () => {
     }
   }
 
-  const [allProjects, setAllProjects] = useState<OrgProject[] | undefined>(undefined)
-  const [isComputeCostsConfirmationModalVisible, setIsComputeCostsConfirmationModalVisible] =
-    useState(false)
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -129,9 +116,9 @@ const Wizard: NextPageWithLayout = () => {
       cloudProvider: PROVIDERS[defaultProvider].id,
       dbPass: '',
       dbPassStrength: 0,
+      instanceSize: undefined,
       dbPassStrengthMessage: '',
       dbRegion: undefined,
-      instanceSize: canChooseInstanceSize ? sizes[0] : undefined,
       dataApi: true,
       enableRlsEventTrigger: false,
       postgresVersionSelection: '',
@@ -146,46 +133,11 @@ const Wizard: NextPageWithLayout = () => {
     highAvailability,
   } = useWatch_Shadcn_({ control: form.control })
 
-  // [Charis] Since the form is updated in a useEffect, there is an edge case
-  // when switching from free to paid, where canChooseInstanceSize is true for
-  // an in-between render, but watchedInstanceSize is still undefined from the
-  // form state carried over from the free plan. To avoid this, we set a
-  // default instance size in this case.
-  const instanceSize = canChooseInstanceSize ? (watchedInstanceSize ?? sizes[0]) : undefined
-
-  const { data: membersExceededLimit = [] } = useFreeProjectLimitCheckQuery(
-    { slug },
-    { enabled: isFreePlan }
-  )
-  const hasMembersExceedingFreeTierLimit = membersExceededLimit.length > 0
-  const freePlanWithExceedingLimits = isFreePlan && hasMembersExceedingFreeTierLimit
+  const instanceSize = undefined // SupaDash: no instance sizing
 
   const { data: organizations = [], isSuccess: isOrganizationsSuccess } = useOrganizationsQuery()
   const isEmptyOrganizations = isOrganizationsSuccess && organizations.length <= 0
 
-  const { data: approvedOAuthApps = [] } = useAuthorizedAppsQuery(
-    { slug },
-    { enabled: !isFreePlan && slug !== '_' }
-  )
-  const hasOAuthApps = approvedOAuthApps.length > 0
-
-  const { data: allOverdueInvoices = [] } = useOverdueInvoicesQuery({
-    enabled: isNotOnHigherPlan,
-  })
-  const overdueInvoices = allOverdueInvoices.filter((x) => x.organization_id === currentOrg?.id)
-  const hasOutstandingInvoices = isNotOnHigherPlan && overdueInvoices.length > 0
-
-  const { data: orgProjectsFromApi } = useOrgProjectsInfiniteQuery({ slug: currentOrg?.slug })
-  const allOrgProjects = useMemo(
-    () => orgProjectsFromApi?.pages.flatMap((page) => page.projects),
-    [orgProjectsFromApi?.pages]
-  )
-  const organizationProjects =
-    allProjects?.filter((project) => project.status !== PROJECT_STATUS.INACTIVE) ?? []
-  const availableComputeCredits = organizationProjects.length === 0 ? 10 : 0
-  const additionalMonthlySpend = isFreePlan
-    ? 0
-    : instanceSizeSpecs[instanceSize as DesiredInstanceSize]!.priceMonthly - availableComputeCredits
 
   const { data: _defaultRegion, error: defaultRegionError } = useDefaultRegionQuery(
     {
@@ -206,7 +158,7 @@ const Wizard: NextPageWithLayout = () => {
       {
         slug: slug,
         cloudProvider: PROVIDERS[cloudProvider as CloudProvider].id,
-        desiredInstanceSize: instanceSize as DesiredInstanceSize,
+        desiredInstanceSize: instanceSize as unknown as DesiredInstanceSize,
       },
       {
         enabled: smartRegionEnabled,
@@ -230,7 +182,7 @@ const Wizard: NextPageWithLayout = () => {
         ? availableRegionsData?.recommendations.smartGroup.name
         : _defaultRegion
 
-  const canCreateProject = isAdmin && !freePlanWithExceedingLimits && !hasOutstandingInvoices
+  const canCreateProject = isAdmin // SupaDash: no billing checks
 
   const dbRegionExact = smartRegionToExactRegion(dbRegion ?? '')
 
@@ -243,13 +195,7 @@ const Wizard: NextPageWithLayout = () => {
     { enabled: currentOrg !== null }
   )
 
-  const userPrimaryEmail = profile?.primary_email?.toLowerCase()
-  const isUserAtFreeProjectLimit = userPrimaryEmail
-    ? membersExceededLimit.some(
-        (member) => member.primary_email?.toLowerCase() === userPrimaryEmail
-      )
-    : false
-  const shouldShowFreeProjectInfo = !!currentOrg && !isFreePlan && !isUserAtFreeProjectLimit
+
 
   const {
     mutate: createProject,
@@ -277,19 +223,9 @@ const Wizard: NextPageWithLayout = () => {
     },
   })
 
+  // SupaDash: no compute cost confirmation needed
   const onSubmitWithComputeCostsConfirmation = async (values: z.infer<typeof FormSchema>) => {
-    const launchingLargerInstance =
-      values.instanceSize &&
-      !sizesWithNoCostConfirmationRequired.includes(values.instanceSize as DesiredInstanceSize)
-
-    if (additionalMonthlySpend > 0 && (hasOAuthApps || launchingLargerInstance)) {
-      track('project_creation_simple_version_confirm_modal_opened', {
-        instanceSize: values.instanceSize,
-      })
-      setIsComputeCostsConfirmationModalVisible(true)
-    } else {
-      await onSubmit(values)
-    }
+    await onSubmit(values)
   }
 
   const onSubmit = async (values: z.infer<typeof FormSchema>) => {
@@ -330,7 +266,7 @@ const Wizard: NextPageWithLayout = () => {
       // gets ignored due to org billing subscription anyway
       dbPricingTierId: 'tier_free',
       // only set the compute size on pro+ plans. Free plans always use micro (nano in the future) size.
-      dbInstanceSize: isFreePlan ? undefined : (instanceSize as DesiredInstanceSize),
+      dbInstanceSize: undefined, // SupaDash: no instance sizing
       dataApiExposedSchemas: !dataApi ? [] : undefined,
       dataApiUseApiSchema: false,
       postgresEngine: useOrioleDb ? availableOrioleVersion?.postgres_engine : postgresEngine,
@@ -362,12 +298,7 @@ const Wizard: NextPageWithLayout = () => {
     createProject(data)
   }
 
-  useEffect(() => {
-    // Only set once to ensure compute credits dont change while project is being created
-    if (allOrgProjects && allOrgProjects.length > 0 && !allProjects) {
-      setAllProjects(allOrgProjects)
-    }
-  }, [allOrgProjects, allProjects, setAllProjects])
+
 
   useEffect(() => {
     // Handle no org: redirect to new org route
@@ -401,15 +332,7 @@ const Wizard: NextPageWithLayout = () => {
     }
   }, [recommendedSmartRegion])
 
-  useEffect(() => {
-    if (watchedInstanceSize !== instanceSize) {
-      form.setValue('instanceSize', instanceSize, {
-        shouldDirty: false,
-        shouldValidate: false,
-        shouldTouch: false,
-      })
-    }
-  }, [instanceSize, watchedInstanceSize, form])
+
 
   return (
     <>
@@ -435,8 +358,8 @@ const Wizard: NextPageWithLayout = () => {
               <ProjectCreationFooter
                 form={form}
                 canCreateProject={canCreateProject}
-                instanceSize={instanceSize}
-                organizationProjects={organizationProjects}
+                instanceSize={undefined}
+                organizationProjects={[]}
                 isCreatingNewProject={isCreatingNewProject}
                 isSuccessNewProject={isSuccessNewProject}
               />
@@ -458,13 +381,13 @@ const Wizard: NextPageWithLayout = () => {
                         <CloudProviderSelector form={form} />
                       )}
 
-                      {canChooseInstanceSize && <ComputeSizeSelector form={form} />}
+  
 
                       <DatabasePasswordInput form={form} />
 
                       <RegionSelector
                         form={form}
-                        instanceSize={instanceSize as DesiredInstanceSize}
+                        instanceSize={instanceSize as unknown as DesiredInstanceSize}
                       />
 
                       {showPostgresVersionSelector && (
@@ -485,94 +408,23 @@ const Wizard: NextPageWithLayout = () => {
                         </Panel.Content>
                       )}
 
-                      {showNonProdFields && <CustomPostgresVersionInput form={form} />}
+                      <CustomPostgresVersionInput form={form} />
 
                       <SecurityOptions form={form} />
                       {showAdvancedConfig && !!availableOrioleVersion && (
                         <AdvancedConfiguration form={form} />
                       )}
 
-                      {shouldShowFreeProjectInfo ? (
-                        <Admonition
-                          className="rounded-none border-0 border-t"
-                          type="note"
-                          title="Need a free project?"
-                          description={
-                            <p>
-                              You can have up to 2 free projects across all organizations.{' '}
-                              <Link className="underline text-foreground" href="/new">
-                                Create a free organization
-                              </Link>{' '}
-                              to use them.
-                            </p>
-                          }
-                        />
-                      ) : null}
                     </>
                   )}
 
-                  {freePlanWithExceedingLimits ? (
-                    isAdmin &&
-                    slug && (
-                      <FreeProjectLimitWarning membersExceededLimit={membersExceededLimit || []} />
-                    )
-                  ) : hasOutstandingInvoices ? (
-                    <Panel.Content>
-                      <Admonition
-                        type="default"
-                        title="Your organization has overdue invoices"
-                        description={
-                          <div className="space-y-3">
-                            <p className="text-sm leading-normal">
-                              Please resolve all outstanding invoices first before creating a new
-                              project
-                            </p>
 
-                            <div>
-                              <Button asChild type="default">
-                                <Link href={`/org/${slug}/billing#invoices`}>View invoices</Link>
-                              </Button>
-                            </div>
-                          </div>
-                        }
-                      />
-                    </Panel.Content>
-                  ) : null}
                 </div>
               )}
             </>
           </Panel>
 
-          <ConfirmationModal
-            size="large"
-            loading={false}
-            visible={isComputeCostsConfirmationModalVisible}
-            title="Confirm compute costs"
-            confirmLabel="I understand"
-            onCancel={() => setIsComputeCostsConfirmationModalVisible(false)}
-            onConfirm={async () => {
-              const values = form.getValues()
-              await onSubmit(values)
-              setIsComputeCostsConfirmationModalVisible(false)
-            }}
-            variant={'warning'}
-          >
-            <div className="text-sm text-foreground-light space-y-1">
-              <p>
-                Launching a project on compute size "{instanceLabel(instanceSize)}" increases your
-                monthly costs by ${additionalMonthlySpend}, independent of how actively you use it.
-                By clicking "I understand", you agree to the additional costs.{' '}
-                <Link
-                  href={`${DOCS_URL}/guides/platform/manage-your-usage/compute`}
-                  target="_blank"
-                  className="underline"
-                >
-                  Compute Costs
-                </Link>{' '}
-                are non-refundable.
-              </p>
-            </div>
-          </ConfirmationModal>
+
         </form>
       </Form_Shadcn_>
     </>

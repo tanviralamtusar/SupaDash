@@ -166,7 +166,7 @@ export const PlanUpdateSidePanel = () => {
           </div>
         }
       >
-        {selectedOrganization && selectedOrganization.managed_by !== MANAGED_BY.SUPABASE && (
+        {selectedOrganization && selectedOrganization.managed_by !== MANAGED_BY.SUPADASH && (
           <PartnerManagedResource
             managedBy={selectedOrganization.managed_by}
             resource="Organization plans"
@@ -244,7 +244,7 @@ export const PlanUpdateSidePanel = () => {
                           subscription?.plan?.id === 'enterprise' ||
                           subscription?.plan?.id === 'platform' ||
                           // Downgrades to free are still allowed through the dashboard given we have much better control about showing customers the impact + any possible issues with downgrading to free
-                          (selectedOrganization?.managed_by !== MANAGED_BY.SUPABASE &&
+                          (selectedOrganization?.managed_by !== MANAGED_BY.SUPADASH &&
                             plan.id !== 'tier_free') ||
                           // Orgs managed by AWS marketplace are not allowed to change the plan
                           selectedOrganization?.managed_by === MANAGED_BY.AWS_MARKETPLACE ||

@@ -97,7 +97,7 @@ export const GetStartedHero = () => {
         <Row col1="1" col2="Create a project" col3="Complete" />
         <Row col1="2" col2="Read documentation" col3="Complete" />
         <Row col1="3" col2="Build application" col3="In progress" />
-        <Row col1="4" col2="Connect Supabase" col3="In progress" />
+        <Row col1="4" col2="Connect SupaDash" col3="In progress" />
         <Row col1="5" col2="Deploy project" col3="Not started" />
         <Row col1="6" col2="Get users" col3="Not started" />
         <Row col1="7" col2="Upgrade to Pro" col3="Not started" />

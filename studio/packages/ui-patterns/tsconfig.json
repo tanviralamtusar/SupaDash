@@ -4,6 +4,6 @@
     "resolveJsonModule": true,
     "incremental": true
   },
-  "include": [".", "./../../packages/ui/src/**/*.d.ts", "../ui/src/components/Icons"],
+  "include": [".", "../ui/src/**/*.d.ts", "../ui/src/components/Icons"],
   "exclude": ["dist", "build", "node_modules"]
 }

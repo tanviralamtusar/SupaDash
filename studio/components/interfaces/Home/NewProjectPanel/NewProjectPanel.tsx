@@ -70,7 +70,7 @@ export const NewProjectPanel = () => {
               <div className="max-w-2xl space-y-2">
                 <h2>Explore our other products</h2>
                 <p className="text-base text-foreground-light">
-                  Supabase provides all the backend features you need to build a product. You can
+                  SupaDash provides all the backend features you need to build a product. You can
                   use it completely, or just the features you need.
                 </p>
               </div>
@@ -216,7 +216,7 @@ export const NewProjectPanel = () => {
             <h2>Connect to your project</h2>
             <p className="text-base text-foreground-light text-balance">
               Interact with your database through the{' '}
-              <InlineLink href={`${DOCS_URL}/reference`}>Supabase client libraries</InlineLink> and
+              <InlineLink href={`${DOCS_URL}/reference`}>SupaDash client libraries</InlineLink> and
               your API keys.
             </p>
           </div>

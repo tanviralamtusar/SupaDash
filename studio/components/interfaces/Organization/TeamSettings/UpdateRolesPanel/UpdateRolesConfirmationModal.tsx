@@ -3,7 +3,7 @@ import { useParams } from 'common'
 import { organizationKeys } from 'data/organization-members/keys'
 import { useOrganizationMemberAssignRoleMutation } from 'data/organization-members/organization-member-role-assign-mutation'
 import { useOrganizationMemberUnassignRoleMutation } from 'data/organization-members/organization-member-role-unassign-mutation'
-import { useOrganizationMemberUpdateRoleMutation } from 'data/organization-members/organization-member-role-update-mutation'
+import { useOrganizationMemberRoleUpdateMutation } from 'data/organization-members/organization-member-role-update-mutation'
 import {
   OrganizationRole,
   useOrganizationRolesV2Query,
@@ -47,7 +47,7 @@ export const UpdateRolesConfirmationModal = ({
   const { mutateAsync: removeRole } = useOrganizationMemberUnassignRoleMutation({
     onError: () => {},
   })
-  const { mutateAsync: updateRole } = useOrganizationMemberUpdateRoleMutation()
+  const { mutateAsync: updateRole } = useOrganizationMemberRoleUpdateMutation()
 
   const availableRoles = allRoles?.org_scoped_roles ?? []
   const { org_scoped_roles, project_scoped_roles } = allRoles ?? {
@@ -111,8 +111,6 @@ export const UpdateRolesConfirmationModal = ({
           slug,
           gotrueId,
           roleId,
-          roleName: project_scoped_roles.find((r) => r.id === roleId)?.name as string,
-          projects: refs,
           skipInvalidation: true,
         })
       }

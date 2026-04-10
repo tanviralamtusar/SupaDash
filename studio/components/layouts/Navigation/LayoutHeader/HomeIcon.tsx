@@ -3,7 +3,7 @@ import { useOrganizationsQuery } from 'data/organizations/organizations-query'
 import { useIsFeatureEnabled } from 'hooks/misc/useIsFeatureEnabled'
 import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
-import { IS_PLATFORM } from 'lib/constants'
+
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { cn } from 'ui'
@@ -27,7 +27,7 @@ export const HomeIcon = ({ className }: { className?: string }) => {
     return '/organizations'
   }
 
-  const href = IS_PLATFORM ? getDefaultOrgRedirect() : '/project/default'
+  const href = getDefaultOrgRedirect()
 
   return (
     <Link href={href} className={cn('items-center justify-center flex-shrink-0 flex', className)}>

@@ -143,13 +143,13 @@ export const deriveRoleChangeActions = (
       return toRemove.push(role.id)
     }
 
-    const projectsToAddToRole = (groupByAddedRoles[role.base_role_id]?.map((r) => r.ref) ??
+    const projectsToAddToRole = (groupByAddedRoles[role.base_role_id as any]?.map((r: any) => r.ref) ??
       []) as string[]
-    const projectsToRemoveFromRole = (groupByRemovedRoles[role.id]?.map((r) => r.ref) ??
+    const projectsToRemoveFromRole = (groupByRemovedRoles[role.id]?.map((r: any) => r.ref) ??
       []) as string[]
-    const projectsUpdatingFromRole = (groupByUpdatingFromRoles[role.id]?.map((r) => r.ref) ??
+    const projectsUpdatingFromRole = (groupByUpdatingFromRoles[role.id]?.map((r: any) => r.ref) ??
       []) as string[]
-    const projectsUpdatingToRole = (groupByUpdatingToRoles[role.base_role_id]?.map((r) => r.ref) ??
+    const projectsUpdatingToRole = (groupByUpdatingToRoles[role.base_role_id as any]?.map((r: any) => r.ref) ??
       []) as string[]
     const projectRefsAppliedUpdated = projectRefsApplied
       .filter((x) => !projectsToRemoveFromRole.includes(x))
