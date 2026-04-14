@@ -52,10 +52,7 @@ services:
           cpus: "0.5"
 
   studio:
-    build:
-      context: ./studio
-      dockerfile: Dockerfile
-    image: supadash/studio:latest
+    image: ghcr.io/<YOUR_GITHUB_USER>/supadash-studio:latest
     container_name: supadash-studio
     restart: unless-stopped
     depends_on:
