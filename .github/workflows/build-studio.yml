@@ -15,6 +15,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/supadash-studio
+  STUDIO_VERSION: v1.24.04
 
 jobs:
   build-and-push:
@@ -30,57 +31,22 @@ jobs:
       - name: Prepare Studio build context
         run: |
           set -euo pipefail
-          STUDIO_VERSION="v1.26.03"
-          BUILD_DIR="${GITHUB_WORKSPACE}/_studio_build"
-          SUPADASH_STUDIO="${GITHUB_WORKSPACE}/studio"
-
+          
           echo "=== SupaDash Studio CI Build ==="
-          echo "  Supabase Studio version: $STUDIO_VERSION"
+          echo "  Supabase Studio version: ${{ env.STUDIO_VERSION }}"
 
-          # 1. Clone upstream Supabase Studio source code
-          echo "[1/4] Cloning Supabase Studio $STUDIO_VERSION..."
-          mkdir -p "$BUILD_DIR"
-          cd "$BUILD_DIR"
-          git clone --depth 1 --branch "$STUDIO_VERSION" --filter=blob:none --sparse \
-            https://github.com/supabase/supabase.git supabase-src
-          cd supabase-src
-          git sparse-checkout set apps/studio
-          echo "  ✓ Studio source downloaded"
-
-          # 2. Assemble build context
-          echo "[2/4] Assembling build context..."
-          # Start with upstream Studio source code
-          cp -r apps/studio "$BUILD_DIR/studio"
-
-          # Use SupaDash repo's own packages (with pre-built CSS artifacts),
-          # lockfile, and workspace config — NOT from upstream monorepo.
-          # The repo's packages/ includes ui/build/css/ which is pre-generated.
-          cp -r "$SUPADASH_STUDIO/packages" "$BUILD_DIR/studio/packages"
-          cp "$SUPADASH_STUDIO/pnpm-lock.yaml" "$BUILD_DIR/studio/pnpm-lock.yaml"
-          cp "$SUPADASH_STUDIO/pnpm-workspace.yaml" "$BUILD_DIR/studio/pnpm-workspace.yaml"
-          echo "  ✓ Build context assembled"
-
-          # 3. Clean original API routes & apply SupaDash patches
-          echo "[3/4] Applying SupaDash patches..."
-          rm -rf "$BUILD_DIR/studio/pages/api"
-          mkdir -p "$BUILD_DIR/studio/pages/api"
-          if [ -d "$SUPADASH_STUDIO/files" ]; then
-            cp -r "$SUPADASH_STUDIO/files"/* "$BUILD_DIR/studio/"
-            echo "  ✓ Patches applied"
+          cd studio
+          chmod +x patch.sh build.sh
+          
+          echo "[1/2] Cloning and patching Supabase Studio..."
+          ./patch.sh ${{ env.STUDIO_VERSION }}
+          
+          if [ -d "code-${{ env.STUDIO_VERSION }}" ]; then
+            echo "  ✓ Patched studio source ready at code-${{ env.STUDIO_VERSION }}"
+          else
+            echo "  ✗ Failed to create code-${{ env.STUDIO_VERSION }}"
+            exit 1
           fi
-
-          # 4. Copy Dockerfile, configs & verify
-          echo "[4/4] Final verification..."
-          cp "$SUPADASH_STUDIO/Dockerfile" "$BUILD_DIR/studio/Dockerfile"
-          cp "$SUPADASH_STUDIO/.dockerignore" "$BUILD_DIR/studio/.dockerignore"
-          cp "$SUPADASH_STUDIO/next.config.js" "$BUILD_DIR/studio/next.config.js"
-          cp "$SUPADASH_STUDIO/csp.js" "$BUILD_DIR/studio/csp.js"
-          cp "$SUPADASH_STUDIO/package.json" "$BUILD_DIR/studio/package.json"
-
-          for f in pnpm-lock.yaml pnpm-workspace.yaml package.json; do
-            [ -f "$BUILD_DIR/studio/$f" ] && echo "  ✓ $f" || { echo "  ✗ $f MISSING"; exit 1; }
-          done
-          [ -d "$BUILD_DIR/studio/packages/ui/build/css" ] && echo "  ✓ packages/ui/build/css (pre-built)" || echo "  ⚠ packages/ui/build/css missing"
 
           echo "=== Build context ready ==="
 
@@ -107,8 +73,8 @@ jobs:
       - name: Build and push Studio image
         uses: docker/build-push-action@v6
         with:
-          context: ${{ github.workspace }}/_studio_build/studio
-          file: ${{ github.workspace }}/_studio_build/studio/Dockerfile
+          context: ${{ github.workspace }}/studio/code-${{ env.STUDIO_VERSION }}
+          file: ${{ github.workspace }}/studio/code-${{ env.STUDIO_VERSION }}/apps/studio/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
