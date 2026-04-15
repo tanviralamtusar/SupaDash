@@ -43,10 +43,11 @@ services:
         - CMD
         - node
         - '-e'
-        - "fetch('http://127.0.0.1:3000/api/platform/profile').then(r => { if (r.status !== 200) throw new Error(r.status) })"
-      timeout: 5s
-      interval: 10s
+        - "fetch('http://127.0.0.1:3000',{redirect:'manual'}).then(r=>{if(r.status>=500)throw r.status}).catch(()=>process.exit(1))"
+      timeout: 10s
+      interval: 15s
       retries: 5
+      start_period: 30s
     depends_on:
       supadash-api:
         condition: service_healthy

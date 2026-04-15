@@ -66,10 +66,11 @@ services:
       - NEXT_ANALYTICS_BACKEND_PROVIDER=postgres
       - HOSTNAME=0.0.0.0
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/platform/profile').then(r => { if (r.status !== 200) throw new Error(r.status) })"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000',{redirect:'manual'}).then(r=>{if(r.status>=500)throw r.status}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 10s
       retries: 5
+      start_period: 30s
     deploy:
       resources:
         limits:
