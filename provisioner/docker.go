@@ -571,21 +571,21 @@ func (p *DockerProvisioner) EnsureProjectReachable(ctx context.Context, ref stri
 
 	// The project's own network name contains "supabase-<ref>" (compose may
 	// prefix it). Fall back to any attached network if the naming changes.
-	var netName string
-	for name := range insp.NetworkSettings.Networks {
+	var netName, kongIP string
+	for name, ep := range insp.NetworkSettings.Networks {
 		if strings.Contains(name, "supabase-"+ref) {
-			netName = name
+			netName, kongIP = name, ep.IPAddress
 			break
 		}
 	}
 	if netName == "" {
-		for name := range insp.NetworkSettings.Networks {
-			netName = name
+		for name, ep := range insp.NetworkSettings.Networks {
+			netName, kongIP = name, ep.IPAddress
 			break
 		}
 	}
-	if netName == "" {
-		return "", fmt.Errorf("kong container %q has no network", kong)
+	if netName == "" || kongIP == "" {
+		return "", fmt.Errorf("kong container %q has no usable network/IP", kong)
 	}
 
 	// Docker sets a container's hostname to its own short ID by default, which
@@ -602,7 +602,13 @@ func (p *DockerProvisioner) EnsureProjectReachable(ctx context.Context, ref stri
 		}
 	}
 
-	return fmt.Sprintf("http://%s:8000", kong), nil
+	// Dial Kong by IP rather than by container name: Docker's embedded DNS is
+	// unreliable at resolving container names for containers attached to a
+	// network at runtime (returns SERVFAIL / "server misbehaving"), but the IP
+	// on that network is directly routable once we're connected. We re-inspect
+	// every call, so a Kong restart (new IP) is picked up automatically.
+	p.logger.Info("project reachable via network", "ref", ref, "network", netName, "kongIP", kongIP, "self", self)
+	return fmt.Sprintf("http://%s:8000", kongIP), nil
 }
 
 // usedHostPorts returns the set of host ports currently published by any
