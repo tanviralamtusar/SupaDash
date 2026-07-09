@@ -26,7 +26,7 @@ type GotrueToken struct {
 func (a *Api) postGotrueToken(c *gin.Context) {
 	var body GotrueToken
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		errJSON(c, http.StatusBadRequest, "Invalid request")
 		return
 	}
 
@@ -39,31 +39,31 @@ func (a *Api) postGotrueToken(c *gin.Context) {
 		})
 
 		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired temp token"})
+			errJSON(c, http.StatusUnauthorized, "Invalid or expired temp token")
 			return
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok || claims["type"] != "mfa_temp" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token type"})
+			errJSON(c, http.StatusUnauthorized, "Invalid token type")
 			return
 		}
 
 		gotrueID := claims["sub"].(string)
 		account, err = a.queries.GetAccountByGoTrueID(c.Request.Context(), gotrueID)
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Account not found"})
+			errJSON(c, http.StatusNotFound, "Account not found")
 			return
 		}
 
 		if !account.TotpEnabled || string(account.TotpSecret) == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "2FA is not enabled for this account"})
+			errJSON(c, http.StatusBadRequest, "2FA is not enabled for this account")
 			return
 		}
 
 		valid := totp.Validate(body.TotpCode, string(account.TotpSecret))
 		if !valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid TOTP code"})
+			errJSON(c, http.StatusUnauthorized, "Invalid TOTP code")
 			return
 		}
 	} else {
@@ -71,12 +71,12 @@ func (a *Api) postGotrueToken(c *gin.Context) {
 		var err error
 		account, err = a.queries.GetAccountByEmail(c.Request.Context(), body.Email)
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Account not found"})
+			errJSON(c, http.StatusNotFound, "Account not found")
 			return
 		}
 
 		if verified, err := argon2.VerifyEncoded([]byte(body.Password), []byte(account.PasswordHash)); err != nil || !verified {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid password"})
+			errJSON(c, http.StatusUnauthorized, "Invalid password")
 			return
 		}
 
@@ -94,7 +94,7 @@ func (a *Api) postGotrueToken(c *gin.Context) {
 			tempTokenJwt := jwt.NewWithClaims(jwt.SigningMethodHS256, tempClaims)
 			signedTempToken, err := tempTokenJwt.SignedString([]byte(a.config.JwtSecret))
 			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create temp token"})
+				errJSON(c, http.StatusInternalServerError, "Failed to create temp token")
 				return
 			}
 
@@ -118,14 +118,14 @@ func (a *Api) postGotrueToken(c *gin.Context) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedJwt, err := token.SignedString([]byte(a.config.JwtSecret))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		errJSON(c, http.StatusInternalServerError, "Internal server error")
 		return
 	}
 
 	// Generate secure refresh token
 	refreshBytes := make([]byte, 32)
 	if _, err := rand.Read(refreshBytes); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate refresh token"})
+		errJSON(c, http.StatusInternalServerError, "Failed to generate refresh token")
 		return
 	}
 	refreshToken := base64.URLEncoding.EncodeToString(refreshBytes)
@@ -137,7 +137,7 @@ func (a *Api) postGotrueToken(c *gin.Context) {
 		ExpiresAt: pgtype.Timestamptz{Time: time.Now().AddDate(0, 0, 30), Valid: true},
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save refresh token"})
+		errJSON(c, http.StatusInternalServerError, "Failed to save refresh token")
 		return
 	}
 

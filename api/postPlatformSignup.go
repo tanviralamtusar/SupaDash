@@ -16,29 +16,29 @@ type PlatformSignupBody struct {
 func (a *Api) postPlatformSignup(c *gin.Context) {
 	var body PlatformSignupBody
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(400, gin.H{"error": "Invalid request"})
+		errJSON(c, 400, "Invalid request")
 		return
 	}
 
 	if !a.config.AllowSignup {
-		c.JSON(403, gin.H{"error": "Signup is disabled"})
+		errJSON(c, 403, "Signup is disabled")
 		return
 	}
 
 	_, err := a.queries.GetAccountByEmail(c.Request.Context(), body.Email)
 	if err == nil {
-		c.JSON(409, gin.H{"error": "Email already in use"})
+		errJSON(c, 409, "Email already in use")
 		return
 	}
 
 	if err != pgx.ErrNoRows {
-		c.JSON(500, gin.H{"error": "Internal server error"})
+		errJSON(c, 500, "Internal server error")
 		return
 	}
 
 	hash, err := a.argon.HashEncoded([]byte(body.Password))
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Internal server error"})
+		errJSON(c, 500, "Internal server error")
 		return
 	}
 
@@ -49,7 +49,7 @@ func (a *Api) postPlatformSignup(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Internal server error"})
+		errJSON(c, 500, "Internal server error")
 		return
 	}
 
