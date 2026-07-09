@@ -37,7 +37,13 @@ services:
       - 'supadash-projects:/app/projects'
 
   supadash-studio:
-    image: ghcr.io/tanviralamtusar/supadash-studio:latest
+    # Tag is parameterized so a specific immutable build (date or commit SHA,
+    # both produced by the Build Studio workflow) can be pinned via the
+    # STUDIO_IMAGE_TAG env var — e.g. STUDIO_IMAGE_TAG=2026-07-09 — for rollbacks.
+    # Defaults to :latest. pull_policy: always forces a fresh pull on every
+    # deploy so a rebuilt :latest is never served from the local cache.
+    image: 'ghcr.io/tanviralamtusar/supadash-studio:${STUDIO_IMAGE_TAG:-latest}'
+    pull_policy: always
     healthcheck:
       test:
         - CMD
