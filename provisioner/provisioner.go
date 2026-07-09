@@ -54,6 +54,12 @@ type ProjectInfo struct {
 	Endpoint      string // API endpoint URL
 	DBEndpoint    string // Database connection string
 
+	// Allocated host ports (persisted so the proxy/MCP can reach the project)
+	DBPort        int
+	APIPort       int
+	APIPortHTTPS  int
+	StudioPort    int
+
 	// Container IDs for management
 	Containers    map[string]string // service name -> container ID
 

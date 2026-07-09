@@ -52,8 +52,11 @@ func (pa *PortAllocator) RegisterExistingPorts(projectID string, ports PortAlloc
 	}
 }
 
-// AllocatePorts assigns a unique set of ports for a new project
-func (pa *PortAllocator) AllocatePorts(projectID string) (*PortAllocation, error) {
+// AllocatePorts assigns a unique set of ports for a new project. externalUsed
+// is a set of host ports already bound by other containers (queried live from
+// Docker) so allocation survives restarts and avoids collisions with running
+// projects that predate this allocator's in-memory state.
+func (pa *PortAllocator) AllocatePorts(projectID string, externalUsed map[int]bool) (*PortAllocation, error) {
 	pa.mu.Lock()
 	defer pa.mu.Unlock()
 
@@ -62,13 +65,13 @@ func (pa *PortAllocator) AllocatePorts(projectID string) (*PortAllocation, error
 	blockSize := 10
 
 	// Find next available block for API ports (starting from baseAPIPort)
-	apiBase, err := pa.findAvailableBlock(pa.baseAPIPort, blockSize)
+	apiBase, err := pa.findAvailableBlock(pa.baseAPIPort, blockSize, externalUsed)
 	if err != nil {
 		return nil, fmt.Errorf("failed to allocate API ports: %w", err)
 	}
 
 	// Find next available block for DB ports (starting from baseDBPort)
-	dbBase, err := pa.findAvailableBlock(pa.baseDBPort, blockSize)
+	dbBase, err := pa.findAvailableBlock(pa.baseDBPort, blockSize, externalUsed)
 	if err != nil {
 		return nil, fmt.Errorf("failed to allocate DB ports: %w", err)
 	}
@@ -106,19 +109,26 @@ func (pa *PortAllocator) ReleasePorts(projectID string) {
 }
 
 // findAvailableBlock searches for a contiguous block of available ports
-func (pa *PortAllocator) findAvailableBlock(startPort, blockSize int) (int, error) {
+func (pa *PortAllocator) findAvailableBlock(startPort, blockSize int, externalUsed map[int]bool) (int, error) {
 	maxPort := 65535
 
 	for base := startPort; base < maxPort-blockSize; base += blockSize {
 		available := true
 		for offset := 0; offset < blockSize; offset++ {
 			port := base + offset
-			// Check if already allocated to a project
+			// Check if already allocated to a project (in-memory)
 			if _, exists := pa.allocatedPorts[port]; exists {
 				available = false
 				break
 			}
-			// Check if port is in use on the host
+			// Check against ports Docker reports as published on the host.
+			// This is the authoritative check and survives restarts.
+			if externalUsed[port] {
+				available = false
+				break
+			}
+			// Best-effort local check (only meaningful for ports bound in
+			// this process's network namespace).
 			if !isPortAvailable(port) {
 				available = false
 				break

@@ -155,11 +155,16 @@ func (a *Api) createProjectCore(ctx context.Context, org database.Organization, 
 				return
 			}
 
-			// Update project with infrastructure info
+			// Update project with infrastructure info, including the allocated
+			// host ports — the pg-meta proxy, MCP and project settings read
+			// kong_http_port / postgres_port to reach the running project.
 			if _, infraErr := a.queries.UpdateProjectInfrastructure(ctx, database.UpdateProjectInfrastructureParams{
 				ProjectRef:        proj.ProjectRef,
 				DockerComposePath: pgtype.Text{String: info.Endpoint, Valid: true},
 				DockerNetworkName: pgtype.Text{String: fmt.Sprintf("supabase-%s", proj.ProjectRef), Valid: true},
+				PostgresPort:      pgtype.Int4{Int32: int32(info.DBPort), Valid: info.DBPort > 0},
+				KongHttpPort:      pgtype.Int4{Int32: int32(info.APIPort), Valid: info.APIPort > 0},
+				KongHttpsPort:     pgtype.Int4{Int32: int32(info.APIPortHTTPS), Valid: info.APIPortHTTPS > 0},
 				AnonKey:           pgtype.Text{String: secrets.AnonKey, Valid: true},
 				ServiceRoleKey:    pgtype.Text{String: secrets.ServiceKey, Valid: true},
 			}); infraErr != nil {

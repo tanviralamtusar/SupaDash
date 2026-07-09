@@ -104,8 +104,9 @@ func (p *DockerProvisioner) CreateProject(ctx context.Context, config *ProjectCo
 		config.DashboardPass = secrets.DashboardPass
 	}
 
-	// Step 3: Allocate unique ports
-	ports, err := p.portAllocator.AllocatePorts(config.ProjectID)
+	// Step 3: Allocate unique ports, avoiding any host ports Docker already
+	// has published (survives restarts and pre-existing projects).
+	ports, err := p.portAllocator.AllocatePorts(config.ProjectID, p.usedHostPorts(ctx))
 	if err != nil {
 		return nil, &ProvisionerError{
 			ProjectID: config.ProjectID,
@@ -477,6 +478,10 @@ func (p *DockerProvisioner) waitForHealthy(ctx context.Context, config *ProjectC
 		Status:      StatusActive,
 		Endpoint:    fmt.Sprintf("http://localhost:%d", ports.APIPort),
 		DBEndpoint:  fmt.Sprintf("postgresql://postgres:%s@localhost:%d/postgres", config.DBPassword, ports.DBPort),
+		DBPort:       ports.DBPort,
+		APIPort:      ports.APIPort,
+		APIPortHTTPS: ports.APIPortHTTPS,
+		StudioPort:   ports.StudioPort,
 		Containers:  make(map[string]string),
 		HealthChecks: make(map[string]bool),
 		CreatedAt:   time.Now().Format(time.RFC3339),
@@ -545,6 +550,27 @@ func (p *DockerProvisioner) cleanup(projectID string) {
 // GetPortAllocator returns the port allocator (for registering existing projects)
 func (p *DockerProvisioner) GetPortAllocator() *PortAllocator {
 	return p.portAllocator
+}
+
+// usedHostPorts returns the set of host ports currently published by any
+// Docker container. This is the authoritative source for avoiding port
+// collisions and, unlike an in-process net.Listen check, correctly reflects
+// ports held by other projects' containers across restarts.
+func (p *DockerProvisioner) usedHostPorts(ctx context.Context) map[int]bool {
+	used := make(map[int]bool)
+	containers, err := p.client.ContainerList(ctx, types.ContainerListOptions{})
+	if err != nil {
+		p.logger.Warn("Failed to list containers for port check", "error", err.Error())
+		return used
+	}
+	for _, c := range containers {
+		for _, port := range c.Ports {
+			if port.PublicPort != 0 {
+				used[int(port.PublicPort)] = true
+			}
+		}
+	}
+	return used
 }
 
 // listContainers lists all containers for a project using the Docker API
