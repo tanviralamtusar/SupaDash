@@ -1,11 +1,25 @@
 # Local development — accessible at http://localhost
 :80 {
-    # API routes
-    handle /v1/* {
+    # Supabase Studio's browser calls the backend at NEXT_PUBLIC_API_URL=/api
+    # (see studio/.env). The Go API serves its routes at the root
+    # (/profile, /platform, /organizations, /projects, /v1, /mcp, ...), so we
+    # strip the /api prefix before proxying. handle_path strips the matched
+    # prefix automatically.
+    handle_path /api/* {
         reverse_proxy api:8080
     }
 
-    # Studio (default)
+    # Direct (non-/api) access to backend endpoints used outside Studio:
+    #   /mcp    — MCP clients (Claude, Cursor, ...) connect here with a PAT
+    #   /v1/*   — REST API + health check
+    #   /status — health probe
+    #   /ws     — realtime stats WebSocket hub
+    @backend path /mcp /mcp/* /v1/* /status /ws
+    handle @backend {
+        reverse_proxy api:8080
+    }
+
+    # Everything else is the Studio UI (Next.js).
     handle {
         reverse_proxy studio:3000
     }
