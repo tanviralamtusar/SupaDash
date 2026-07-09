@@ -172,9 +172,15 @@ func (a *Api) Router() *gin.Engine {
 	}
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     allowedOrigins,
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Authorization", "Content-Type", "Accept"},
+		AllowOrigins: allowedOrigins,
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		// Studio (served on a different origin than the API) sends these on its
+		// cross-origin fetches; missing entries cause the preflight to fail.
+		AllowHeaders: []string{
+			"Origin", "Authorization", "Content-Type", "Accept",
+			"apikey", "x-client-info", "x-supabase-api-version",
+			"x-connection-encrypted", "x-request-id",
+		},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,

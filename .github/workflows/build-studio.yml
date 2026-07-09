@@ -40,7 +40,7 @@ jobs:
           
           echo "[1/2] Cloning and patching Supabase Studio..."
           ./patch.sh ${{ env.STUDIO_VERSION }}
-          
+
           if [ -d "code-${{ env.STUDIO_VERSION }}" ]; then
             echo "  ✓ Patched studio source ready at code-${{ env.STUDIO_VERSION }}"
           else
@@ -49,6 +49,35 @@ jobs:
           fi
 
           echo "=== Build context ready ==="
+
+      - name: Bake Studio public environment
+        env:
+          # NEXT_PUBLIC_* variables are inlined by `next build`, so they must be
+          # present in apps/studio/.env at image build time — a runtime env var
+          # in docker-compose has NO effect. The browser (on the Studio domain)
+          # calls the API cross-origin, so this must be the API's PUBLIC domain,
+          # NOT an internal service name and NOT "/api".
+          # Configure per-deployment via repo Variables; defaults below match the
+          # current botbhai.net deployment.
+          API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'https://supadash.botbhai.net' }}
+          SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://supadash-studio.botbhai.net' }}
+        run: |
+          set -euo pipefail
+          cd studio/code-${{ env.STUDIO_VERSION }}/apps/studio
+
+          # Start from the repo's studio env template, then override the URLs
+          # that must point at the deployment's public domains.
+          #   API_URL   → platform/profile/project REST calls (${API_URL}/platform/...)
+          #   GOTRUE    → sign-in via the GoTrue client posts to ${GOTRUE_URL}/token,
+          #               and the Go API serves that at /auth/token → base is ${API_URL}/auth
+          #   SITE_URL  → post-signup redirect target (the Studio domain)
+          cp "${{ github.workspace }}/studio/.env" .env
+          sed -i "s|^NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=${API_URL}|" .env
+          sed -i "s|^NEXT_PUBLIC_SITE_URL=.*|NEXT_PUBLIC_SITE_URL=${SITE_URL}|" .env
+          sed -i "s|^NEXT_PUBLIC_GOTRUE_URL=.*|NEXT_PUBLIC_GOTRUE_URL=${API_URL}/auth|" .env
+
+          echo "=== Baked studio public env ==="
+          grep '^NEXT_PUBLIC_' .env
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
