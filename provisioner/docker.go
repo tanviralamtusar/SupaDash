@@ -143,9 +143,17 @@ func (p *DockerProvisioner) CreateProject(ctx context.Context, config *ProjectCo
 	// (Docker would silently create empty directories in its place).
 	hostBase := p.hostProjectsDir(ctx)
 	if hostBase == "" {
-		hostBase = p.baseDir
+		// Fall back to an ABSOLUTE container path so the bind mount is at least
+		// valid YAML (a bare relative path is parsed as a named volume). This
+		// path is only correct when the API runs directly on the host; under
+		// docker-in-docker the host can't see it and bind mounts will still fail.
+		if abs, absErr := filepath.Abs(p.baseDir); absErr == nil {
+			hostBase = abs
+		} else {
+			hostBase = p.baseDir
+		}
 		p.logger.Warn("could not resolve host path for projects dir; bind mounts may fail under docker-in-docker",
-			"baseDir", p.baseDir)
+			"baseDir", p.baseDir, "fallback", hostBase)
 	}
 	config.HostProjectDir = path.Join(hostBase, config.ProjectID)
 	p.logger.Info("resolved host project dir for bind mounts", "projectID", config.ProjectID, "hostDir", config.HostProjectDir)
@@ -583,7 +591,13 @@ func (p *DockerProvisioner) hostProjectsDir(ctx context.Context) string {
 		return ""
 	}
 
-	base := strings.TrimRight(filepath.ToSlash(p.baseDir), "/")
+	// baseDir may be relative (e.g. "./projects"); mount destinations are
+	// absolute, so resolve it against the API process's working directory first.
+	base := p.baseDir
+	if abs, absErr := filepath.Abs(base); absErr == nil {
+		base = abs
+	}
+	base = strings.TrimRight(filepath.ToSlash(base), "/")
 	best := ""
 	for _, m := range insp.Mounts {
 		dest := strings.TrimRight(filepath.ToSlash(m.Destination), "/")
