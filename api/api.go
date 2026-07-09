@@ -339,6 +339,7 @@ func (a *Api) Router() *gin.Engine {
 				specificProject.GET("/status", a.getProjectStatus)
 				specificProject.GET("/service-versions", a.getPlatformProjectServiceVersions)
 				specificProject.GET("/members", a.getPlatformProjectMembers)
+				specificProject.GET("/config/supavisor", a.getProjectPoolingConfig)
 
 				// Delete project (Studio's Danger Zone posts DELETE here)
 				specificProject.DELETE(INDEX, a.RequireProjectRole("owner"), a.deleteProject)
@@ -414,6 +415,7 @@ func (a *Api) Router() *gin.Engine {
 			{
 				specificProject.GET("/custom-hostname", a.getProjectCustomHostname)
 				specificProject.GET("/upgrade/eligibility", a.getProjectUpgradeEligibility)
+				specificProject.GET("/health", a.getV1ProjectHealth)
 
 				// Delete project (Management API parity)
 				specificProject.DELETE(INDEX, a.RequireProjectRole("owner"), a.deleteProject)
