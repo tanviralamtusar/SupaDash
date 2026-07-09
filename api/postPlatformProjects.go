@@ -115,9 +115,17 @@ func (a *Api) createProjectCore(ctx context.Context, org database.Organization, 
 			ctx := context.Background()
 			a.logger.Info(fmt.Sprintf("Starting async provisioning for project %s (%s)", proj.ProjectRef, proj.ProjectName))
 
+			// The Postgres password is interpolated into the compose YAML and
+			// into non-URL-encoded connection strings, so it must be
+			// alphanumeric. Fall back to the generated (hex, safe) password if
+			// the supplied one contains characters that would break either.
 			dbPassword := secrets.DBPassword
 			if dbPass != "" {
-				dbPassword = dbPass
+				if provisioner.IsInfraSafePassword(dbPass) {
+					dbPassword = dbPass
+				} else {
+					a.logger.Warn(fmt.Sprintf("Supplied db password for %s contains unsupported characters; using a generated password instead", proj.ProjectRef))
+				}
 			}
 
 			config := &provisioner.ProjectConfig{

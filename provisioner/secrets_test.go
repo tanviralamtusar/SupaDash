@@ -149,3 +149,18 @@ func TestGenerateProjectSecrets(t *testing.T) {
 		assert.NotEqual(t, secrets.DBPassword, secrets2.DBPassword)
 	})
 }
+
+func TestIsInfraSafePassword(t *testing.T) {
+	safe := []string{"abc123", "DEADBEEF00", "Password2026", "a"}
+	for _, pw := range safe {
+		if !IsInfraSafePassword(pw) {
+			t.Errorf("IsInfraSafePassword(%q) = false, want true", pw)
+		}
+	}
+	unsafe := []string{"", "@Tanvir@2006@", "has space", "a:b", "p@ss", "a/b", "under_score", "quote\"", "dash-dash"}
+	for _, pw := range unsafe {
+		if IsInfraSafePassword(pw) {
+			t.Errorf("IsInfraSafePassword(%q) = true, want false", pw)
+		}
+	}
+}

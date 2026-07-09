@@ -5,10 +5,24 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
+// infraSafePassword matches passwords safe to interpolate into the project
+// docker-compose YAML and, critically, into the postgres://user:PASS@host
+// connection strings the Supabase services build (which are NOT URL-encoded).
+// Restricting to alphanumerics avoids both YAML parse errors and URI auth
+// mismatches.
+var infraSafePassword = regexp.MustCompile(`^[A-Za-z0-9]+$`)
+
+// IsInfraSafePassword reports whether pw can be safely used as the project's
+// Postgres password across the compose template and service connection URIs.
+func IsInfraSafePassword(pw string) bool {
+	return pw != "" && infraSafePassword.MatchString(pw)
+}
 
 // ProjectSecrets contains all generated secrets for a new project
 type ProjectSecrets struct {
