@@ -25,6 +25,7 @@ type Api struct {
 	pgPool          *pgxpool.Pool
 	argon           argon2.Config
 	provisioner     provisioner.Provisioner
+	brancher        provisioner.Brancher
 	resourceManager *provisioner.ResourceManager
 	burstPool       *provisioner.BurstPoolManager
 	wsHub           *WsHub
@@ -56,6 +57,7 @@ func CreateApi(logger *slog.Logger, config *conf.Config) (*Api, error) {
 
 	// Initialize provisioner if enabled
 	var prov provisioner.Provisioner
+	var brancher provisioner.Brancher
 	var resMgr *provisioner.ResourceManager
 	var burstMgr *provisioner.BurstPoolManager
 	if config.Provisioning.Enabled {
@@ -70,6 +72,7 @@ func CreateApi(logger *slog.Logger, config *conf.Config) (*Api, error) {
 			logger.Info("Continuing without provisioner - projects can be created but not provisioned")
 		} else {
 			prov = dockerProv
+			brancher = provisioner.NewDBBrancher(dockerProv)
 			logger.Info("Docker provisioner initialized and enabled")
 
 			// Initialize resource manager and burst pool
@@ -94,6 +97,7 @@ func CreateApi(logger *slog.Logger, config *conf.Config) (*Api, error) {
 		pgPool:          conn,
 		argon:           argon2.DefaultConfig(),
 		provisioner:     prov,
+		brancher:        brancher,
 		resourceManager: resMgr,
 		burstPool:       burstMgr,
 		wsHub:           wsHub,
@@ -188,7 +192,18 @@ func (a *Api) Router() *gin.Engine {
 		profile.GET(INDEX, a.getProfile)
 		profile.GET("/permissions", a.getProfilePermissions)
 		profile.POST("/password-check", a.postPasswordCheck)
+
+		// Personal access tokens (used by the MCP server)
+		profile.GET("/access-tokens", a.getAccessTokens)
+		profile.POST("/access-tokens", a.postAccessTokens)
+		profile.DELETE("/access-tokens/:id", a.deleteAccessToken)
 	}
+
+	// MCP server (streamable HTTP + SSE), PAT-authenticated.
+	// /mcp exposes account + project tools; /mcp?project_ref=<ref> scopes
+	// the session to one project and hides account-level tools.
+	mcpHandler := a.MCPHandler()
+	r.Any("/mcp", gin.WrapH(mcpHandler))
 
 	organization := r.Group("/organizations")
 	{
@@ -389,9 +404,42 @@ func (a *Api) Router() *gin.Engine {
 				specificProject.GET("/upgrade/eligibility", a.getProjectUpgradeEligibility)
 				
 				// Edge Function Secrets management
-				specificProject.GET("/secrets", a.getV1ProjectSecrets)
-				specificProject.POST("/secrets", a.postV1ProjectSecrets)
-				specificProject.DELETE("/secrets", a.deleteV1ProjectSecrets)
+				specificProject.GET("/secrets", a.RequireProjectRole("owner", "admin", "member"), a.getV1ProjectSecrets)
+				specificProject.POST("/secrets", a.RequireProjectRole("owner", "admin", "member"), a.postV1ProjectSecrets)
+				specificProject.DELETE("/secrets", a.RequireProjectRole("owner", "admin"), a.deleteV1ProjectSecrets)
+
+				// Edge Functions management
+				functions := specificProject.Group("/functions")
+				{
+					functions.GET(INDEX, a.RequireProjectRole("owner", "admin", "member", "viewer"), a.getV1ProjectFunctions)
+					functions.POST(INDEX, a.RequireProjectRole("owner", "admin", "member"), a.deployV1ProjectFunction)
+					functions.GET("/:function_slug", a.RequireProjectRole("owner", "admin", "member", "viewer"), a.getV1ProjectFunction)
+					functions.GET("/:function_slug/body", a.RequireProjectRole("owner", "admin", "member", "viewer"), a.getV1ProjectFunctionBody)
+					functions.PATCH("/:function_slug", a.RequireProjectRole("owner", "admin", "member"), a.deployV1ProjectFunction)
+					functions.DELETE("/:function_slug", a.RequireProjectRole("owner", "admin"), a.deleteV1ProjectFunction)
+				}
+
+				// Branching (list/create nested under the parent project)
+				branches := specificProject.Group("/branches")
+				{
+					branches.GET(INDEX, a.RequireProjectRole("owner", "admin", "member", "viewer"), a.getV1ProjectBranches)
+					branches.POST(INDEX, a.RequireProjectRole("owner", "admin", "member"), a.postV1ProjectBranches)
+				}
+			}
+		}
+
+		// Branch operations addressed by branch id (matches the Supabase v1 API
+		// shape: /v1/branches/{branch_id}). Role checks happen in the handlers
+		// via the branch's parent project.
+		v1Branches := v1.Group("/branches")
+		{
+			specificBranch := v1Branches.Group("/:branch_id")
+			{
+				specificBranch.GET(INDEX, a.getV1Branch)
+				specificBranch.DELETE(INDEX, a.deleteV1Branch)
+				specificBranch.POST("/merge", a.postV1BranchMerge)
+				specificBranch.POST("/reset", a.postV1BranchReset)
+				specificBranch.POST("/rebase", a.postV1BranchRebase)
 			}
 		}
 	}

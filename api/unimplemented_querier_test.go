@@ -126,6 +126,60 @@ func (unimplementedQuerier) UpsertProjectResources(context.Context, database.Ups
 func (unimplementedQuerier) GetAllProjectResources(context.Context) ([]database.ProjectResource, error) {
 	panic("unimplemented")
 }
+func (unimplementedQuerier) UpdateProjectResourceUsage(context.Context, database.UpdateProjectResourceUsageParams) error {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) CreateAccessToken(context.Context, database.CreateAccessTokenParams) (database.PersonalAccessToken, error) {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) GetAccessTokenByHash(context.Context, string) (database.PersonalAccessToken, error) {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) GetAccessTokensForAccount(context.Context, int32) ([]database.PersonalAccessToken, error) {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) TouchAccessToken(context.Context, int32) error {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) DeleteAccessToken(context.Context, int32, int32) error {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) CreateProjectBranch(context.Context, database.CreateProjectBranchParams) (database.ProjectBranch, error) {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) GetProjectBranches(context.Context, string) ([]database.ProjectBranch, error) {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) GetProjectBranch(context.Context, int32) (database.ProjectBranch, error) {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) UpdateProjectBranchStatus(context.Context, int32, string) error {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) DeleteProjectBranch(context.Context, int32) error {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) GetEdgeFunctions(context.Context, string) ([]database.EdgeFunction, error) {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) GetEdgeFunction(context.Context, string, string) (database.EdgeFunction, error) {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) UpsertEdgeFunction(context.Context, database.UpsertEdgeFunctionParams) (database.EdgeFunction, error) {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) DeleteEdgeFunction(context.Context, string, string) error {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) GetProjectSecrets(context.Context, string) ([]database.ProjectSecret, error) {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) UpsertProjectSecret(context.Context, database.UpsertProjectSecretParams) error {
+	panic("unimplemented")
+}
+func (unimplementedQuerier) DeleteProjectSecret(context.Context, string, string) error {
+	panic("unimplemented")
+}
 func (unimplementedQuerier) InsertResourceSnapshot(context.Context, database.InsertResourceSnapshotParams) error {
 	panic("unimplemented")
 }

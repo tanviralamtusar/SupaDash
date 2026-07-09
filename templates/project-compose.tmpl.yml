@@ -348,6 +348,9 @@ services:
     restart: unless-stopped
     networks:
       - supabase-{{.ProjectID}}
+    env_file:
+      - path: ./functions.env
+        required: false
     environment:
       JWT_SECRET: {{.JWTSecret}}
       SUPABASE_URL: http://kong:8000

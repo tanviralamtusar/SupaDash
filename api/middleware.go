@@ -3,6 +3,7 @@ package api
 import (
 	"golang.org/x/time/rate"
 	"net/http"
+	"strings"
 	"supadash/database"
 	"sync"
 	"time"
@@ -104,7 +105,10 @@ func (a *Api) RequireOrgRole(roles ...string) gin.HandlerFunc {
 
 		hasRole := false
 		for _, role := range roles {
-			if membership.Role == role {
+			// Case-insensitive: roles have historically been stored in
+			// mixed case (e.g. "OWNER" at org creation, request-supplied
+			// case on team invites).
+			if strings.EqualFold(membership.Role, role) {
 				hasRole = true
 				break
 			}
@@ -147,7 +151,8 @@ func (a *Api) RequireProjectRole(roles ...string) gin.HandlerFunc {
 
 		hasRole := false
 		for _, role := range roles {
-			if membership.Role == role {
+			// Case-insensitive: see RequireOrgRole
+			if strings.EqualFold(membership.Role, role) {
 				hasRole = true
 				break
 			}

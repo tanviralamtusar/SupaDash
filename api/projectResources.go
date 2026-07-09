@@ -13,21 +13,28 @@ import (
 // --- Project Resources ---
 
 type ResourcesResponse struct {
-	ProjectRef        string  `json:"project_ref"`
-	Plan              string  `json:"plan"`
-	CPULimit          float64 `json:"cpu_limit"`
-	CPUReservation    float64 `json:"cpu_reservation"`
-	MemoryLimitMB     int64   `json:"memory_limit_mb"`
-	MemoryReservMB    int64   `json:"memory_reservation_mb"`
-	BurstEligible     bool    `json:"burst_eligible"`
-	BurstPriority     int32   `json:"burst_priority"`
+	ProjectRef          string  `json:"project_ref"`
+	Plan                string  `json:"plan"`
+	CPULimit            float64 `json:"cpu_limit"`
+	CPUReservation      float64 `json:"cpu_reservation"`
+	MemoryLimitMB       int64   `json:"memory_limit_mb"`
+	MemoryReservMB      int64   `json:"memory_reservation_mb"`
+	BurstEligible       bool    `json:"burst_eligible"`
+	BurstPriority       int32   `json:"burst_priority"`
+	DatabaseSizeLimitMB int64   `json:"database_size_limit_mb"`
+	StorageSizeLimitMB  int64   `json:"storage_size_limit_mb"`
+	DatabaseSizeMB      int64   `json:"database_size_mb"`
+	StorageSizeMB       int64   `json:"storage_size_mb"`
+	WritesBlocked       bool    `json:"writes_blocked"`
 }
 
 type UpdateResourcesBody struct {
-	Plan              string  `json:"plan"`
-	CPULimit          float64 `json:"cpu_limit"`
-	MemoryLimitMB     int64   `json:"memory_limit_mb"`
-	BurstEligible     *bool   `json:"burst_eligible,omitempty"`
+	Plan                string  `json:"plan"`
+	CPULimit            float64 `json:"cpu_limit"`
+	MemoryLimitMB       int64   `json:"memory_limit_mb"`
+	DatabaseSizeLimitMB int64   `json:"database_size_limit_mb"`
+	StorageSizeLimitMB  int64   `json:"storage_size_limit_mb"`
+	BurstEligible       *bool   `json:"burst_eligible,omitempty"`
 }
 
 func (a *Api) getProjectResources(c *gin.Context) {
@@ -43,31 +50,43 @@ func (a *Api) getProjectResources(c *gin.Context) {
 		// Return defaults if no resource record exists
 		defaults := provisioner.GetDefaultQuotas(provisioner.PlanFree)
 		c.JSON(http.StatusOK, ResourcesResponse{
-			ProjectRef:     projectRef,
-			Plan:           "FREE",
-			CPULimit:       defaults.CPULimit,
-			CPUReservation: defaults.CPULimit / 2,
-			MemoryLimitMB:  defaults.MemoryLimit / (1024 * 1024),
-			MemoryReservMB: defaults.MemoryLimit / (1024 * 1024) / 2,
-			BurstEligible:  true,
-			BurstPriority:  0,
+			ProjectRef:          projectRef,
+			Plan:                "FREE",
+			CPULimit:            defaults.CPULimit,
+			CPUReservation:      defaults.CPULimit / 2,
+			MemoryLimitMB:       defaults.MemoryLimit / (1024 * 1024),
+			MemoryReservMB:      defaults.MemoryLimit / (1024 * 1024) / 2,
+			BurstEligible:       true,
+			BurstPriority:       0,
+			DatabaseSizeLimitMB: defaults.DatabaseSize / (1024 * 1024),
+			StorageSizeLimitMB:  defaults.StorageSize / (1024 * 1024),
 		})
 		return
 	}
 
+	c.JSON(http.StatusOK, resourcesResponseFromRow(res))
+}
+
+// resourcesResponseFromRow converts a DB row into the API response shape.
+func resourcesResponseFromRow(res database.ProjectResource) ResourcesResponse {
 	cpuLimitVal, _ := res.CpuLimit.Float64Value()
 	cpuReservationVal, _ := res.CpuReservation.Float64Value()
 
-	c.JSON(http.StatusOK, ResourcesResponse{
-		ProjectRef:     res.ProjectRef,
-		Plan:           res.Plan,
-		CPULimit:       cpuLimitVal.Float64,
-		CPUReservation: cpuReservationVal.Float64,
-		MemoryLimitMB:  res.MemoryLimit / (1024 * 1024),
-		MemoryReservMB: res.MemoryReservation / (1024 * 1024),
-		BurstEligible:  res.BurstEligible,
-		BurstPriority:  res.BurstPriority,
-	})
+	return ResourcesResponse{
+		ProjectRef:          res.ProjectRef,
+		Plan:                res.Plan,
+		CPULimit:            cpuLimitVal.Float64,
+		CPUReservation:      cpuReservationVal.Float64,
+		MemoryLimitMB:       res.MemoryLimit / (1024 * 1024),
+		MemoryReservMB:      res.MemoryReservation / (1024 * 1024),
+		BurstEligible:       res.BurstEligible,
+		BurstPriority:       res.BurstPriority,
+		DatabaseSizeLimitMB: res.DatabaseSizeLimitBytes / (1024 * 1024),
+		StorageSizeLimitMB:  res.StorageSizeLimitBytes / (1024 * 1024),
+		DatabaseSizeMB:      res.DatabaseSizeBytes / (1024 * 1024),
+		StorageSizeMB:       res.StorageSizeBytes / (1024 * 1024),
+		WritesBlocked:       res.WritesBlocked,
+	}
 }
 
 func (a *Api) putProjectResources(c *gin.Context) {
@@ -94,6 +113,16 @@ func (a *Api) putProjectResources(c *gin.Context) {
 	plan := provisioner.QuotaPlan(body.Plan)
 	defaults := provisioner.GetDefaultQuotas(plan)
 
+	// Reject requests below platform minimums (500 MB RAM, 1 GB storage, 500 MB DB)
+	if err := provisioner.ValidateResourceFloor(
+		body.MemoryLimitMB*1024*1024,
+		body.StorageSizeLimitMB*1024*1024,
+		body.DatabaseSizeLimitMB*1024*1024,
+	); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	cpuLimit := body.CPULimit
 	if cpuLimit <= 0 {
 		cpuLimit = defaults.CPULimit
@@ -101,6 +130,16 @@ func (a *Api) putProjectResources(c *gin.Context) {
 	memoryLimit := body.MemoryLimitMB * 1024 * 1024
 	if memoryLimit <= 0 {
 		memoryLimit = defaults.MemoryLimit
+	}
+	// 0 falls back to the plan default (plan defaults are all >= the platform
+	// minimums, except unlimited plans where 0 means "no limit").
+	databaseSizeLimit := body.DatabaseSizeLimitMB * 1024 * 1024
+	if databaseSizeLimit <= 0 {
+		databaseSizeLimit = defaults.DatabaseSize
+	}
+	storageSizeLimit := body.StorageSizeLimitMB * 1024 * 1024
+	if storageSizeLimit <= 0 {
+		storageSizeLimit = defaults.StorageSize
 	}
 
 	burstEligible := true
@@ -110,14 +149,16 @@ func (a *Api) putProjectResources(c *gin.Context) {
 
 	// Save to DB
 	res, err := a.queries.UpsertProjectResources(c.Request.Context(), database.UpsertProjectResourcesParams{
-		ProjectRef:        projectRef,
-		Plan:              string(plan),
-		CPULimit:          cpuLimit,
-		CPUReservation:    cpuLimit / 2,
-		MemoryLimit:       memoryLimit,
-		MemoryReservation: memoryLimit / 2,
-		BurstEligible:     burstEligible,
-		BurstPriority:     0,
+		ProjectRef:             projectRef,
+		Plan:                   string(plan),
+		CPULimit:               cpuLimit,
+		CPUReservation:         cpuLimit / 2,
+		MemoryLimit:            memoryLimit,
+		MemoryReservation:      memoryLimit / 2,
+		BurstEligible:          burstEligible,
+		BurstPriority:          0,
+		DatabaseSizeLimitBytes: databaseSizeLimit,
+		StorageSizeLimitBytes:  storageSizeLimit,
 	})
 	if err != nil {
 		a.logger.Error(fmt.Sprintf("Failed to update resources for %s: %v", projectRef, err))
@@ -134,19 +175,7 @@ func (a *Api) putProjectResources(c *gin.Context) {
 		}()
 	}
 
-	cpuLimitVal, _ := res.CpuLimit.Float64Value()
-	cpuReservationVal, _ := res.CpuReservation.Float64Value()
-
-	c.JSON(http.StatusOK, ResourcesResponse{
-		ProjectRef:     res.ProjectRef,
-		Plan:           res.Plan,
-		CPULimit:       cpuLimitVal.Float64,
-		CPUReservation: cpuReservationVal.Float64,
-		MemoryLimitMB:  res.MemoryLimit / (1024 * 1024),
-		MemoryReservMB: res.MemoryReservation / (1024 * 1024),
-		BurstEligible:  res.BurstEligible,
-		BurstPriority:  res.BurstPriority,
-	})
+	c.JSON(http.StatusOK, resourcesResponseFromRow(res))
 }
 
 // --- Analysis ---

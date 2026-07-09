@@ -2,8 +2,36 @@ package provisioner
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 )
+
+// Platform-wide minimums for user-configurable project resources.
+// Requests below these floors are rejected.
+const (
+	MinMemoryBytes   int64 = 500 * 1024 * 1024  // 500 MB RAM
+	MinStorageBytes  int64 = 1024 * 1024 * 1024 // 1 GB file storage
+	MinDatabaseBytes int64 = 500 * 1024 * 1024  // 500 MB database
+)
+
+// ValidateResourceFloor checks requested limits against platform minimums.
+// A value of 0 means "use plan default" and is not validated here.
+func ValidateResourceFloor(memoryBytes, storageBytes, databaseBytes int64) error {
+	if memoryBytes != 0 && memoryBytes < MinMemoryBytes {
+		return fmt.Errorf("memory limit %d MB is below the platform minimum of %d MB",
+			memoryBytes/(1024*1024), MinMemoryBytes/(1024*1024))
+	}
+	if storageBytes != 0 && storageBytes < MinStorageBytes {
+		return fmt.Errorf("storage limit %d MB is below the platform minimum of %d MB",
+			storageBytes/(1024*1024), MinStorageBytes/(1024*1024))
+	}
+	if databaseBytes != 0 && databaseBytes < MinDatabaseBytes {
+		return fmt.Errorf("database size limit %d MB is below the platform minimum of %d MB",
+			databaseBytes/(1024*1024), MinDatabaseBytes/(1024*1024))
+	}
+	return nil
+}
 
 // ResourceQuotas defines resource limits for a project
 type ResourceQuotas struct {
@@ -160,6 +188,23 @@ func GetDefaultQuotas(plan QuotaPlan) ResourceQuotas {
 
 	default:
 		return GetDefaultQuotas(PlanFree)
+	}
+}
+
+// PlanForInstanceSize maps a Studio "desired_instance_size" value to a quota plan.
+// Unknown or empty sizes default to the FREE plan.
+func PlanForInstanceSize(size string) QuotaPlan {
+	switch strings.ToLower(size) {
+	case "", "micro", "free":
+		return PlanFree
+	case "small", "starter":
+		return PlanStarter
+	case "medium", "pro":
+		return PlanPro
+	case "large", "xlarge", "enterprise":
+		return PlanEnterprise
+	default:
+		return PlanFree
 	}
 }
 

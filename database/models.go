@@ -76,6 +76,48 @@ type Project struct {
 	ProvisionedAt     pgtype.Timestamptz
 }
 
+type EdgeFunction struct {
+	ID             int32
+	ProjectRef     string
+	Slug           string
+	Name           string
+	Status         string
+	VerifyJwt      bool
+	EntrypointPath string
+	Version        int32
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+}
+
+type ProjectSecret struct {
+	ID             int32
+	ProjectRef     string
+	Name           string
+	ValueEncrypted string
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+}
+
+type PersonalAccessToken struct {
+	ID         int32
+	AccountID  int32
+	Name       string
+	TokenHash  string
+	CreatedAt  pgtype.Timestamptz
+	LastUsedAt pgtype.Timestamptz
+}
+
+type ProjectBranch struct {
+	ID               int32
+	ParentProjectRef string
+	BranchName       string
+	DbName           string
+	Status           string
+	GitBranch        pgtype.Text
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+}
+
 type ProjectEnvVar struct {
 	ID         int32
 	ProjectRef string
@@ -87,17 +129,23 @@ type ProjectEnvVar struct {
 }
 
 type ProjectResource struct {
-	ID                int32
-	ProjectRef        string
-	Plan              string
-	CpuLimit          pgtype.Numeric
-	CpuReservation    pgtype.Numeric
-	MemoryLimit       int64
-	MemoryReservation int64
-	BurstEligible     bool
-	BurstPriority     int32
-	CreatedAt         pgtype.Timestamptz
-	UpdatedAt         pgtype.Timestamptz
+	ID                     int32
+	ProjectRef             string
+	Plan                   string
+	CpuLimit               pgtype.Numeric
+	CpuReservation         pgtype.Numeric
+	MemoryLimit            int64
+	MemoryReservation      int64
+	BurstEligible          bool
+	BurstPriority          int32
+	CreatedAt              pgtype.Timestamptz
+	UpdatedAt              pgtype.Timestamptz
+	DatabaseSizeLimitBytes int64
+	StorageSizeLimitBytes  int64
+	DatabaseSizeBytes      int64
+	StorageSizeBytes       int64
+	WritesBlocked          bool
+	UsageUpdatedAt         pgtype.Timestamptz
 }
 
 type RefreshToken struct {

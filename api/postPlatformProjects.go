@@ -48,57 +48,64 @@ type ProjectCreationResponse struct {
 	SubscriptionId           string   `json:"subscription_id"`
 }
 
-func (a *Api) postPlatformProjects(c *gin.Context) {
-	_, err := a.GetAccountFromRequest(c)
-	if err != nil {
-		c.JSON(401, gin.H{"error": "Unauthorized"})
-		return
-	}
+// createProjectCore creates a project record, persists its resource plan and
+// kicks off async provisioning. Shared by the HTTP handler and the MCP
+// create_project tool.
+func (a *Api) createProjectCore(ctx context.Context, orgSlug, name, dbPass, instanceSize string) (database.Project, *provisioner.ProjectSecrets, error) {
+	var zero database.Project
 
-	var createProject ProjectCreationBody
-	if err := c.BindJSON(&createProject); err != nil {
-		c.JSON(400, gin.H{"error": "Bad Request"})
-		return
-	}
-
-	org, err := a.queries.GetOrganizationBySlug(c, createProject.OrganizationSlug)
+	org, err := a.queries.GetOrganizationBySlug(ctx, orgSlug)
 	if err != nil {
-		a.logger.Error(fmt.Sprintf("Failed to find organization by slug %s: %v", createProject.OrganizationSlug, err))
-		c.JSON(400, gin.H{"error": "Invalid organization slug"})
-		return
+		return zero, nil, fmt.Errorf("invalid organization slug %q", orgSlug)
 	}
 
 	// Generate secrets for the new project
 	secrets, err := provisioner.GenerateProjectSecrets()
 	if err != nil {
 		a.logger.Error(fmt.Sprintf("Failed to generate secrets: %v", err))
-		c.JSON(500, gin.H{"error": "Failed to generate project secrets"})
-		return
+		return zero, nil, fmt.Errorf("failed to generate project secrets")
 	}
 
-	projectRef := utils.GenerateProjectRef(createProject.Name)
+	projectRef := utils.GenerateProjectRef(name)
 
 	// Create project in database with generated keys
-	proj, err := a.queries.CreateProject(c.Request.Context(), database.CreateProjectParams{
+	proj, err := a.queries.CreateProject(ctx, database.CreateProjectParams{
 		ProjectRef:     projectRef,
-		ProjectName:    createProject.Name,
+		ProjectName:    name,
 		OrganizationID: int32(org.ID),
 		JwtSecret:      secrets.JWTSecret,
 		CloudProvider:  "DOCKER",
 		Region:         "LOCAL",
 	})
-
 	if err != nil {
 		a.logger.Error(fmt.Sprintf("Failed to create project in database: %v", err))
-		c.JSON(500, gin.H{"error": "Internal Server Error"})
-		return
+		return zero, nil, fmt.Errorf("failed to create project")
 	}
 
 	// Broadcast initial project status
 	a.wsHub.BroadcastStatus(projectRef, proj.Status)
 
+	// Persist the resource plan for the project (from desired_instance_size).
+	// Plan defaults already respect the platform minimums (500 MB RAM, 1 GB storage, 500 MB DB).
+	plan := provisioner.PlanForInstanceSize(instanceSize)
+	quotas := provisioner.GetDefaultQuotas(plan)
+	if _, resErr := a.queries.UpsertProjectResources(ctx, database.UpsertProjectResourcesParams{
+		ProjectRef:             proj.ProjectRef,
+		Plan:                   string(plan),
+		CPULimit:               quotas.CPULimit,
+		CPUReservation:         quotas.CPULimit / 2,
+		MemoryLimit:            quotas.MemoryLimit,
+		MemoryReservation:      quotas.MemoryLimit / 2,
+		BurstEligible:          true,
+		BurstPriority:          0,
+		DatabaseSizeLimitBytes: quotas.DatabaseSize,
+		StorageSizeLimitBytes:  quotas.StorageSize,
+	}); resErr != nil {
+		a.logger.Warn(fmt.Sprintf("Failed to persist resource plan for %s: %v", proj.ProjectRef, resErr))
+	}
+
 	// Update project with generated keys immediately
-	if _, updateErr := a.queries.UpdateProjectInfrastructure(c.Request.Context(), database.UpdateProjectInfrastructureParams{
+	if _, updateErr := a.queries.UpdateProjectInfrastructure(ctx, database.UpdateProjectInfrastructureParams{
 		ProjectRef:     proj.ProjectRef,
 		AnonKey:        pgtype.Text{String: secrets.AnonKey, Valid: true},
 		ServiceRoleKey: pgtype.Text{String: secrets.ServiceKey, Valid: true},
@@ -113,8 +120,8 @@ func (a *Api) postPlatformProjects(c *gin.Context) {
 			a.logger.Info(fmt.Sprintf("Starting async provisioning for project %s (%s)", proj.ProjectRef, proj.ProjectName))
 
 			dbPassword := secrets.DBPassword
-			if createProject.DbPass != "" {
-				dbPassword = createProject.DbPass
+			if dbPass != "" {
+				dbPassword = dbPass
 			}
 
 			config := &provisioner.ProjectConfig{
@@ -164,8 +171,39 @@ func (a *Api) postPlatformProjects(c *gin.Context) {
 			}
 			a.wsHub.BroadcastStatus(proj.ProjectRef, "ACTIVE_HEALTHY")
 
+			// Apply the plan's CPU/memory limits to the freshly provisioned containers.
+			// A zero limit means "unlimited" — nothing to apply.
+			if a.resourceManager != nil && quotas.CPULimit > 0 && quotas.MemoryLimit > 0 {
+				if limitErr := a.resourceManager.SetProjectResources(ctx, proj.ProjectRef, quotas.CPULimit, quotas.MemoryLimit); limitErr != nil {
+					a.logger.Warn(fmt.Sprintf("Failed to apply resource limits for %s: %v", proj.ProjectRef, limitErr))
+				}
+			}
+
 			a.logger.Info(fmt.Sprintf("Provisioning completed for project %s — API: %s", proj.ProjectRef, info.Endpoint))
 		}()
+	}
+
+	return proj, secrets, nil
+}
+
+func (a *Api) postPlatformProjects(c *gin.Context) {
+	_, err := a.GetAccountFromRequest(c)
+	if err != nil {
+		c.JSON(401, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	var createProject ProjectCreationBody
+	if err := c.BindJSON(&createProject); err != nil {
+		c.JSON(400, gin.H{"error": "Bad Request"})
+		return
+	}
+
+	proj, secrets, err := a.createProjectCore(c.Request.Context(),
+		createProject.OrganizationSlug, createProject.Name, createProject.DbPass, createProject.DesiredInstanceSize)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusCreated, ProjectCreationResponse{
@@ -181,7 +219,7 @@ func (a *Api) postPlatformProjects(c *gin.Context) {
 		Endpoint:                 fmt.Sprintf("https://%s.%s", proj.ProjectRef, a.config.Domain.Base),
 		AnonKey:                  secrets.AnonKey,
 		ServiceKey:               secrets.ServiceKey,
-		IsBranchEnabled:          false,
+		IsBranchEnabled:          true,
 		PreviewBranchRefs:        []string{},
 		IsPhysicalBackupsEnabled: false,
 		IsReadReplicasEnabled:    false,

@@ -62,6 +62,7 @@ type Querier interface {
 	GetProjectResources(ctx context.Context, projectRef string) (database.ProjectResource, error)
 	UpsertProjectResources(ctx context.Context, arg database.UpsertProjectResourcesParams) (database.ProjectResource, error)
 	GetAllProjectResources(ctx context.Context) ([]database.ProjectResource, error)
+	UpdateProjectResourceUsage(ctx context.Context, arg database.UpdateProjectResourceUsageParams) error
 	InsertResourceSnapshot(ctx context.Context, arg database.InsertResourceSnapshotParams) error
 	GetRecentSnapshots(ctx context.Context, projectRef string, since time.Time) ([]database.ResourceSnapshot, error)
 	DeleteOldSnapshots(ctx context.Context, before time.Time) error
@@ -75,6 +76,31 @@ type Querier interface {
 	InsertAuditLog(ctx context.Context, arg database.InsertAuditLogParams) (database.AuditLog, error)
 	GetProjectAuditLogs(ctx context.Context, arg database.GetProjectAuditLogsParams) ([]database.AuditLog, error)
 	GetOrganizationAuditLogs(ctx context.Context, arg database.GetOrganizationAuditLogsParams) ([]database.AuditLog, error)
+
+	// Personal access tokens
+	CreateAccessToken(ctx context.Context, arg database.CreateAccessTokenParams) (database.PersonalAccessToken, error)
+	GetAccessTokenByHash(ctx context.Context, tokenHash string) (database.PersonalAccessToken, error)
+	GetAccessTokensForAccount(ctx context.Context, accountID int32) ([]database.PersonalAccessToken, error)
+	TouchAccessToken(ctx context.Context, id int32) error
+	DeleteAccessToken(ctx context.Context, id int32, accountID int32) error
+
+	// Branches
+	CreateProjectBranch(ctx context.Context, arg database.CreateProjectBranchParams) (database.ProjectBranch, error)
+	GetProjectBranches(ctx context.Context, parentProjectRef string) ([]database.ProjectBranch, error)
+	GetProjectBranch(ctx context.Context, id int32) (database.ProjectBranch, error)
+	UpdateProjectBranchStatus(ctx context.Context, id int32, status string) error
+	DeleteProjectBranch(ctx context.Context, id int32) error
+
+	// Edge functions
+	GetEdgeFunctions(ctx context.Context, projectRef string) ([]database.EdgeFunction, error)
+	GetEdgeFunction(ctx context.Context, projectRef string, slug string) (database.EdgeFunction, error)
+	UpsertEdgeFunction(ctx context.Context, arg database.UpsertEdgeFunctionParams) (database.EdgeFunction, error)
+	DeleteEdgeFunction(ctx context.Context, projectRef string, slug string) error
+
+	// Project secrets
+	GetProjectSecrets(ctx context.Context, projectRef string) ([]database.ProjectSecret, error)
+	UpsertProjectSecret(ctx context.Context, arg database.UpsertProjectSecretParams) error
+	DeleteProjectSecret(ctx context.Context, projectRef string, name string) error
 
 	// Migrations
 	GetMigrations(ctx context.Context) ([]database.Migration, error)

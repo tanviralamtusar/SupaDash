@@ -7,60 +7,70 @@ import (
 
 // --- Project Resources ---
 
+const projectResourceColumns = `id, project_ref, plan, cpu_limit, cpu_reservation, memory_limit, memory_reservation,
+       burst_eligible, burst_priority, created_at, updated_at,
+       database_size_limit_bytes, storage_size_limit_bytes, database_size_bytes, storage_size_bytes,
+       writes_blocked, usage_updated_at`
+
+func scanProjectResource(row interface{ Scan(...interface{}) error }, r *ProjectResource) error {
+	return row.Scan(
+		&r.ID, &r.ProjectRef, &r.Plan, &r.CpuLimit, &r.CpuReservation,
+		&r.MemoryLimit, &r.MemoryReservation, &r.BurstEligible, &r.BurstPriority,
+		&r.CreatedAt, &r.UpdatedAt,
+		&r.DatabaseSizeLimitBytes, &r.StorageSizeLimitBytes, &r.DatabaseSizeBytes, &r.StorageSizeBytes,
+		&r.WritesBlocked, &r.UsageUpdatedAt,
+	)
+}
+
 const getProjectResources = `
-SELECT id, project_ref, plan, cpu_limit, cpu_reservation, memory_limit, memory_reservation,
-       burst_eligible, burst_priority, created_at, updated_at
+SELECT ` + projectResourceColumns + `
 FROM project_resources WHERE project_ref = $1
 `
 
 func (q *Queries) GetProjectResources(ctx context.Context, projectRef string) (ProjectResource, error) {
 	row := q.db.QueryRow(ctx, getProjectResources, projectRef)
 	var r ProjectResource
-	err := row.Scan(
-		&r.ID, &r.ProjectRef, &r.Plan, &r.CpuLimit, &r.CpuReservation,
-		&r.MemoryLimit, &r.MemoryReservation, &r.BurstEligible, &r.BurstPriority,
-		&r.CreatedAt, &r.UpdatedAt,
-	)
+	err := scanProjectResource(row, &r)
 	return r, err
 }
 
 const upsertProjectResources = `
-INSERT INTO project_resources (project_ref, plan, cpu_limit, cpu_reservation, memory_limit, memory_reservation, burst_eligible, burst_priority, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
+INSERT INTO project_resources (project_ref, plan, cpu_limit, cpu_reservation, memory_limit, memory_reservation,
+    burst_eligible, burst_priority, database_size_limit_bytes, storage_size_limit_bytes, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now())
 ON CONFLICT (project_ref) DO UPDATE
 SET plan = $2, cpu_limit = $3, cpu_reservation = $4, memory_limit = $5,
-    memory_reservation = $6, burst_eligible = $7, burst_priority = $8, updated_at = now()
-RETURNING *
+    memory_reservation = $6, burst_eligible = $7, burst_priority = $8,
+    database_size_limit_bytes = $9, storage_size_limit_bytes = $10, updated_at = now()
+RETURNING ` + projectResourceColumns + `
 `
 
 type UpsertProjectResourcesParams struct {
-	ProjectRef        string
-	Plan              string
-	CPULimit          float64
-	CPUReservation    float64
-	MemoryLimit       int64
-	MemoryReservation int64
-	BurstEligible     bool
-	BurstPriority     int32
+	ProjectRef             string
+	Plan                   string
+	CPULimit               float64
+	CPUReservation         float64
+	MemoryLimit            int64
+	MemoryReservation      int64
+	BurstEligible          bool
+	BurstPriority          int32
+	DatabaseSizeLimitBytes int64
+	StorageSizeLimitBytes  int64
 }
 
 func (q *Queries) UpsertProjectResources(ctx context.Context, arg UpsertProjectResourcesParams) (ProjectResource, error) {
 	row := q.db.QueryRow(ctx, upsertProjectResources,
 		arg.ProjectRef, arg.Plan, arg.CPULimit, arg.CPUReservation,
 		arg.MemoryLimit, arg.MemoryReservation, arg.BurstEligible, arg.BurstPriority,
+		arg.DatabaseSizeLimitBytes, arg.StorageSizeLimitBytes,
 	)
 	var r ProjectResource
-	err := row.Scan(
-		&r.ID, &r.ProjectRef, &r.Plan, &r.CpuLimit, &r.CpuReservation,
-		&r.MemoryLimit, &r.MemoryReservation, &r.BurstEligible, &r.BurstPriority,
-		&r.CreatedAt, &r.UpdatedAt,
-	)
+	err := scanProjectResource(row, &r)
 	return r, err
 }
 
 const getAllProjectResources = `
-SELECT id, project_ref, plan, cpu_limit, cpu_reservation, memory_limit, memory_reservation,
-       burst_eligible, burst_priority, created_at, updated_at
+SELECT ` + projectResourceColumns + `
 FROM project_resources ORDER BY project_ref
 `
 
@@ -73,16 +83,34 @@ func (q *Queries) GetAllProjectResources(ctx context.Context) ([]ProjectResource
 	var items []ProjectResource
 	for rows.Next() {
 		var r ProjectResource
-		if err := rows.Scan(
-			&r.ID, &r.ProjectRef, &r.Plan, &r.CpuLimit, &r.CpuReservation,
-			&r.MemoryLimit, &r.MemoryReservation, &r.BurstEligible, &r.BurstPriority,
-			&r.CreatedAt, &r.UpdatedAt,
-		); err != nil {
+		if err := scanProjectResource(rows, &r); err != nil {
 			return nil, err
 		}
 		items = append(items, r)
 	}
 	return items, rows.Err()
+}
+
+const updateProjectResourceUsage = `
+UPDATE project_resources
+SET database_size_bytes = $2, storage_size_bytes = $3, writes_blocked = $4, usage_updated_at = now()
+WHERE project_ref = $1
+`
+
+type UpdateProjectResourceUsageParams struct {
+	ProjectRef        string
+	DatabaseSizeBytes int64
+	StorageSizeBytes  int64
+	WritesBlocked     bool
+}
+
+// UpdateProjectResourceUsage records the latest measured disk usage for a project
+// and toggles the soft write-block flag. Called by the analysis collector.
+func (q *Queries) UpdateProjectResourceUsage(ctx context.Context, arg UpdateProjectResourceUsageParams) error {
+	_, err := q.db.Exec(ctx, updateProjectResourceUsage,
+		arg.ProjectRef, arg.DatabaseSizeBytes, arg.StorageSizeBytes, arg.WritesBlocked,
+	)
+	return err
 }
 
 // --- Resource Snapshots ---

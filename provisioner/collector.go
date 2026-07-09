@@ -51,9 +51,10 @@ func NewAnalysisCollector(
 	}
 }
 
-// Run starts the background collection loop with 3 tickers
+// Run starts the background collection loop with 4 tickers
 func (ac *AnalysisCollector) Run(ctx context.Context) {
 	snapshotTicker := time.NewTicker(30 * time.Second)
+	diskUsageTicker := time.NewTicker(5 * time.Minute)
 	aggregateTicker := time.NewTicker(1 * time.Hour)
 	recommendTicker := time.NewTicker(6 * time.Hour)
 
@@ -63,6 +64,8 @@ func (ac *AnalysisCollector) Run(ctx context.Context) {
 		select {
 		case <-snapshotTicker.C:
 			ac.collectSnapshots(ctx)
+		case <-diskUsageTicker.C:
+			ac.collectDiskUsage(ctx)
 		case <-aggregateTicker.C:
 			ac.aggregateHourly(ctx)
 			ac.cleanupOldData(ctx)
@@ -71,6 +74,7 @@ func (ac *AnalysisCollector) Run(ctx context.Context) {
 		case <-ctx.Done():
 			ac.logger.Info("Analysis collector stopped")
 			snapshotTicker.Stop()
+			diskUsageTicker.Stop()
 			aggregateTicker.Stop()
 			recommendTicker.Stop()
 			return
@@ -371,6 +375,167 @@ func (ac *AnalysisCollector) analyzeProject(ctx context.Context, projectID strin
 			PotentialSavingsMB: 0,
 		})
 	}
+}
+
+// --- Disk usage quota enforcement ---
+
+// collectDiskUsage measures DB and file-storage usage for all active projects,
+// records it, and toggles the soft write-block (read-only mode) when a project
+// crosses 100% of its size limits. Warnings are emitted when crossing 80%.
+func (ac *AnalysisCollector) collectDiskUsage(ctx context.Context) {
+	projects, err := ac.provisioner.ListProjects(ctx)
+	if err != nil {
+		ac.logger.Warn("Failed to list projects for disk usage collection", "error", err.Error())
+		return
+	}
+
+	for _, project := range projects {
+		if project.Status != StatusActive {
+			continue
+		}
+		ac.checkProjectDiskUsage(ctx, project.ProjectID)
+	}
+}
+
+// checkProjectDiskUsage measures and enforces disk quotas for a single project.
+func (ac *AnalysisCollector) checkProjectDiskUsage(ctx context.Context, projectID string) {
+	res, err := ac.queries.GetProjectResources(ctx, projectID)
+	if err != nil {
+		// No resource plan recorded — nothing to enforce
+		return
+	}
+
+	dbSize, dbErr := ac.measureDatabaseSize(ctx, projectID)
+	storageSize, stErr := ac.measureStorageSize(ctx, projectID)
+	if dbErr != nil && stErr != nil {
+		// Both measurements failed (containers restarting?) — skip this round
+		return
+	}
+	// Keep previous readings for any failed measurement
+	if dbErr != nil {
+		dbSize = res.DatabaseSizeBytes
+	}
+	if stErr != nil {
+		storageSize = res.StorageSizeBytes
+	}
+
+	// A limit of 0 means unlimited
+	overDB := res.DatabaseSizeLimitBytes > 0 && dbSize >= res.DatabaseSizeLimitBytes
+	overStorage := res.StorageSizeLimitBytes > 0 && storageSize >= res.StorageSizeLimitBytes
+	shouldBlock := overDB || overStorage
+
+	// Warning threshold crossings (80%), deduped against the previous reading
+	warnPct := 0.8
+	newWarnDB := res.DatabaseSizeLimitBytes > 0 &&
+		float64(dbSize) >= warnPct*float64(res.DatabaseSizeLimitBytes) &&
+		float64(res.DatabaseSizeBytes) < warnPct*float64(res.DatabaseSizeLimitBytes)
+	newWarnStorage := res.StorageSizeLimitBytes > 0 &&
+		float64(storageSize) >= warnPct*float64(res.StorageSizeLimitBytes) &&
+		float64(res.StorageSizeBytes) < warnPct*float64(res.StorageSizeLimitBytes)
+
+	if newWarnDB {
+		ac.queries.InsertRecommendation(ctx, database.InsertRecommendationParams{
+			ProjectRef:  projectID,
+			Type:        "alert",
+			Severity:    "warning",
+			Title:       "Database size approaching limit",
+			Description: fmt.Sprintf("Database is using %d MB of its %d MB limit (over 80%%). Free up space or increase the limit to avoid the project entering read-only mode.", dbSize/(1024*1024), res.DatabaseSizeLimitBytes/(1024*1024)),
+		})
+	}
+	if newWarnStorage {
+		ac.queries.InsertRecommendation(ctx, database.InsertRecommendationParams{
+			ProjectRef:  projectID,
+			Type:        "alert",
+			Severity:    "warning",
+			Title:       "File storage approaching limit",
+			Description: fmt.Sprintf("Storage is using %d MB of its %d MB limit (over 80%%). Free up space or increase the limit to avoid the project entering read-only mode.", storageSize/(1024*1024), res.StorageSizeLimitBytes/(1024*1024)),
+		})
+	}
+
+	// Toggle the soft block only on state change
+	if shouldBlock != res.WritesBlocked {
+		if err := ac.setReadOnlyMode(ctx, projectID, shouldBlock); err != nil {
+			ac.logger.Warn("Failed to toggle read-only mode", "project", projectID, "block", shouldBlock, "error", err.Error())
+		} else if shouldBlock {
+			ac.logger.Info("Project entered read-only mode (disk quota exceeded)", "project", projectID)
+			ac.queries.InsertRecommendation(ctx, database.InsertRecommendationParams{
+				ProjectRef:  projectID,
+				Type:        "alert",
+				Severity:    "critical",
+				Title:       "Disk quota exceeded — project is read-only",
+				Description: fmt.Sprintf("Usage exceeded the configured limits (DB: %d/%d MB, storage: %d/%d MB). New writes are blocked until space is freed or limits are raised.", dbSize/(1024*1024), res.DatabaseSizeLimitBytes/(1024*1024), storageSize/(1024*1024), res.StorageSizeLimitBytes/(1024*1024)),
+			})
+		} else {
+			ac.logger.Info("Project left read-only mode (disk usage back under limits)", "project", projectID)
+		}
+	}
+
+	if err := ac.queries.UpdateProjectResourceUsage(ctx, database.UpdateProjectResourceUsageParams{
+		ProjectRef:        projectID,
+		DatabaseSizeBytes: dbSize,
+		StorageSizeBytes:  storageSize,
+		WritesBlocked:     shouldBlock,
+	}); err != nil {
+		ac.logger.Warn("Failed to record disk usage", "project", projectID, "error", err.Error())
+	}
+
+	// Broadcast usage for live dashboards
+	if ac.broadcaster != nil {
+		ac.broadcaster.BroadcastStats(projectID, map[string]interface{}{
+			"database_size_bytes":  dbSize,
+			"storage_size_bytes":   storageSize,
+			"database_limit_bytes": res.DatabaseSizeLimitBytes,
+			"storage_limit_bytes":  res.StorageSizeLimitBytes,
+			"writes_blocked":       shouldBlock,
+			"timestamp":            time.Now().Unix(),
+		})
+	}
+}
+
+// measureDatabaseSize returns the size of the project's postgres database in bytes.
+func (ac *AnalysisCollector) measureDatabaseSize(ctx context.Context, projectID string) (int64, error) {
+	out, err := ac.provisioner.ExecuteCommand(ctx, projectID, "db",
+		[]string{"psql", "-U", "postgres", "-tAc", "SELECT pg_database_size('postgres')"})
+	if err != nil {
+		return 0, err
+	}
+	size, err := strconv.ParseInt(strings.TrimSpace(out), 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("unexpected pg_database_size output %q: %w", out, err)
+	}
+	return size, nil
+}
+
+// measureStorageSize returns the bytes used by the project's object storage (MinIO data dir).
+func (ac *AnalysisCollector) measureStorageSize(ctx context.Context, projectID string) (int64, error) {
+	out, err := ac.provisioner.ExecuteCommand(ctx, projectID, "minio", []string{"du", "-sk", "/data"})
+	if err != nil {
+		return 0, err
+	}
+	fields := strings.Fields(strings.TrimSpace(out))
+	if len(fields) == 0 {
+		return 0, fmt.Errorf("unexpected du output %q", out)
+	}
+	kb, err := strconv.ParseInt(fields[0], 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("unexpected du output %q: %w", out, err)
+	}
+	return kb * 1024, nil
+}
+
+// setReadOnlyMode soft-blocks (or unblocks) writes by toggling
+// default_transaction_read_only on the project's postgres database.
+// This is a soft limit: superusers and sessions that explicitly override
+// the setting can still write (so users can free up space).
+func (ac *AnalysisCollector) setReadOnlyMode(ctx context.Context, projectID string, readOnly bool) error {
+	mode := "off"
+	if readOnly {
+		mode = "on"
+	}
+	_, err := ac.provisioner.ExecuteCommand(ctx, projectID, "db",
+		[]string{"psql", "-U", "postgres", "-c",
+			fmt.Sprintf("ALTER DATABASE postgres SET default_transaction_read_only = %s", mode)})
+	return err
 }
 
 // --- Parsing helpers ---

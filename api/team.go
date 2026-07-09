@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"supadash/database"
 	"supadash/provisioner"
 
@@ -44,6 +45,8 @@ func (a *Api) inviteTeamMember(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and role are required"})
 		return
 	}
+	// Roles are stored lowercase; comparisons are case-insensitive for legacy rows
+	req.Role = strings.ToLower(req.Role)
 
 	// Caller must be Owner or Admin (enforced by middleware)
 	account, err := a.GetAccountFromRequest(c)
@@ -97,6 +100,7 @@ func (a *Api) updateTeamMemberRole(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Role is required"})
 		return
 	}
+	req.Role = strings.ToLower(req.Role)
 
 	org, err := a.queries.GetOrganizationBySlug(c.Request.Context(), slug)
 	if err != nil {

@@ -163,6 +163,17 @@ func (p *DockerProvisioner) CreateProject(ctx context.Context, config *ProjectCo
 		}
 	}
 
+	// Create the functions directory with the main router + empty env file —
+	// the edge-functions container mounts ./functions and needs a main service.
+	if err := p.EnsureFunctionsDir(config.ProjectID); err != nil {
+		p.cleanup(config.ProjectID)
+		return nil, &ProvisionerError{
+			ProjectID: config.ProjectID,
+			Operation: "create_functions_dir",
+			Err:       err,
+		}
+	}
+
 	p.logger.Info("Templates rendered successfully", "projectID", config.ProjectID, "dir", projectDir)
 
 	// Step 6: Pull images (if internet available)
