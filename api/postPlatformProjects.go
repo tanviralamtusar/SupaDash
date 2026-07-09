@@ -3,9 +3,10 @@ package api
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
-	"net/http"
 	"supadash/database"
 	"supadash/provisioner"
 	"supadash/utils"
@@ -13,7 +14,7 @@ import (
 
 type ProjectCreationBody struct {
 	CloudProvider                  string `json:"cloud_provider"`
-	OrganizationSlug               string `json:"organization_slug"`
+	OrgId                          int32  `json:"org_id"`
 	Name                           string `json:"name"`
 	DbPass                         string `json:"db_pass"`
 	DbRegion                       string `json:"db_region"`
@@ -49,15 +50,10 @@ type ProjectCreationResponse struct {
 }
 
 // createProjectCore creates a project record, persists its resource plan and
-// kicks off async provisioning. Shared by the HTTP handler and the MCP
-// create_project tool.
-func (a *Api) createProjectCore(ctx context.Context, orgSlug, name, dbPass, instanceSize string) (database.Project, *provisioner.ProjectSecrets, error) {
+// kicks off async provisioning. The org must already be resolved by the caller
+// (the HTTP handler resolves it by numeric org_id, the MCP tool by slug).
+func (a *Api) createProjectCore(ctx context.Context, org database.Organization, name, dbPass, instanceSize string) (database.Project, *provisioner.ProjectSecrets, error) {
 	var zero database.Project
-
-	org, err := a.queries.GetOrganizationBySlug(ctx, orgSlug)
-	if err != nil {
-		return zero, nil, fmt.Errorf("invalid organization slug %q", orgSlug)
-	}
 
 	// Generate secrets for the new project
 	secrets, err := provisioner.GenerateProjectSecrets()
@@ -187,22 +183,46 @@ func (a *Api) createProjectCore(ctx context.Context, orgSlug, name, dbPass, inst
 }
 
 func (a *Api) postPlatformProjects(c *gin.Context) {
-	_, err := a.GetAccountFromRequest(c)
+	account, err := a.GetAccountFromRequest(c)
 	if err != nil {
-		c.JSON(401, gin.H{"error": "Unauthorized"})
+		errJSON(c, 401, "Unauthorized")
 		return
 	}
 
 	var createProject ProjectCreationBody
 	if err := c.BindJSON(&createProject); err != nil {
-		c.JSON(400, gin.H{"error": "Bad Request"})
+		errJSON(c, 400, "Bad Request")
+		return
+	}
+
+	if createProject.OrgId == 0 {
+		errJSON(c, 400, "org_id is required")
+		return
+	}
+	if createProject.Name == "" {
+		errJSON(c, 400, "Project name is required")
+		return
+	}
+
+	// Resolve the org by its numeric id (Studio sends org_id) and confirm the
+	// caller is a member of it.
+	org, err := a.queries.GetOrganizationByNumericId(c.Request.Context(), createProject.OrgId)
+	if err != nil {
+		errJSON(c, 400, "Invalid organization")
+		return
+	}
+	if _, err := a.queries.GetOrganizationMembershipBySlug(c.Request.Context(), database.GetOrganizationMembershipBySlugParams{
+		Slug:      org.Slug,
+		AccountID: account.ID,
+	}); err != nil {
+		errJSON(c, 403, "You are not a member of this organization")
 		return
 	}
 
 	proj, secrets, err := a.createProjectCore(c.Request.Context(),
-		createProject.OrganizationSlug, createProject.Name, createProject.DbPass, createProject.DesiredInstanceSize)
+		org, createProject.Name, createProject.DbPass, createProject.DesiredInstanceSize)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		errJSON(c, 400, err.Error())
 		return
 	}
 
@@ -212,7 +232,7 @@ func (a *Api) postPlatformProjects(c *gin.Context) {
 		Name:                     proj.ProjectName,
 		Status:                   proj.Status,
 		OrganizationId:           proj.OrganizationID,
-		OrganizationSlug:         createProject.OrganizationSlug,
+		OrganizationSlug:         org.Slug,
 		CloudProvider:            "DOCKER",
 		Region:                   "LOCAL",
 		InsertedAt:               proj.CreatedAt.Time.Format("2006-01-02T15:04:05.999Z"),

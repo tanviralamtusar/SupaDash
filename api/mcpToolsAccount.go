@@ -120,7 +120,12 @@ func (a *Api) registerAccountTools(server *mcp.Server) {
 			return nil, nil, errors.New("name is required")
 		}
 
-		proj, _, err := a.createProjectCore(ctx, in.OrganizationId, in.Name, in.DbPass, in.InstanceSize)
+		org, err := a.queries.GetOrganizationBySlug(ctx, in.OrganizationId)
+		if err != nil {
+			return nil, nil, fmt.Errorf("organization %q not found", in.OrganizationId)
+		}
+
+		proj, _, err := a.createProjectCore(ctx, org, in.Name, in.DbPass, in.InstanceSize)
 		if err != nil {
 			return nil, nil, err
 		}

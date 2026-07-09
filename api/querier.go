@@ -33,6 +33,7 @@ type Querier interface {
 	CreateOrganization(ctx context.Context, name string) (database.Organization, error)
 	GetOrganizationBySlug(ctx context.Context, slug string) (database.Organization, error)
 	GetOrganizationById(ctx context.Context, id string) (database.Organization, error)
+	GetOrganizationByNumericId(ctx context.Context, id int32) (database.Organization, error)
 	GetOrganizationIdsForAccountId(ctx context.Context, accountID int32) ([]int32, error)
 	GetOrganizationsForAccountId(ctx context.Context, accountID int32) ([]database.GetOrganizationsForAccountIdRow, error)
 	CreateOrganizationMembership(ctx context.Context, arg database.CreateOrganizationMembershipParams) (database.OrganizationMembership, error)

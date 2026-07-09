@@ -47,6 +47,20 @@ func (q *Queries) GetOrganizationById(ctx context.Context, id string) (Organizat
 	return i, err
 }
 
+const getOrganizationByNumericId = `-- name: GetOrganizationByNumericId :one
+SELECT id, slug, name, created_at, updated_at FROM public.organizations WHERE id = $1
+`
+
+// GetOrganizationByNumericId looks up an organization by its numeric primary
+// key. (GetOrganizationById is misnamed and matches on slug — kept for
+// backwards compatibility.)
+func (q *Queries) GetOrganizationByNumericId(ctx context.Context, id int32) (Organization, error) {
+	row := q.db.QueryRow(ctx, getOrganizationByNumericId, id)
+	var i Organization
+	err := row.Scan(&i.ID, &i.Slug, &i.Name, &i.CreatedAt, &i.UpdatedAt)
+	return i, err
+}
+
 const getOrganizationBySlug = `-- name: GetOrganizationBySlug :one
 SELECT id, slug, name, created_at, updated_at
 FROM public.organizations

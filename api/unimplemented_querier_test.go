@@ -57,6 +57,9 @@ func (unimplementedQuerier) GetOrganizationBySlug(context.Context, string) (data
 func (unimplementedQuerier) GetOrganizationById(context.Context, string) (database.Organization, error) {
 	panic("unimplemented")
 }
+func (unimplementedQuerier) GetOrganizationByNumericId(context.Context, int32) (database.Organization, error) {
+	panic("unimplemented")
+}
 func (unimplementedQuerier) GetOrganizationIdsForAccountId(context.Context, int32) ([]int32, error) {
 	panic("unimplemented")
 }
