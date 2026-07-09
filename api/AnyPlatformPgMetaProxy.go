@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
@@ -8,6 +9,32 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
+
+// projectReachabilityEnsurer is implemented by the Docker provisioner: it joins
+// the API container to a project's Docker network and returns the internal Kong
+// base URL. Declared locally so the api package doesn't depend on the concrete
+// provisioner type (and degrades gracefully for provisioners that don't support it).
+type projectReachabilityEnsurer interface {
+	EnsureProjectReachable(ctx context.Context, ref string) (string, error)
+}
+
+// projectKongBaseURL returns the base URL the API should use to reach a
+// project's Kong gateway. It prefers container-to-container networking
+// (http://<ref>-kong:8000), which avoids the host firewall, and falls back to
+// the published host port via the configured project host if that fails.
+func (a *Api) projectKongBaseURL(ctx context.Context, ref string, kongHostPort int32) string {
+	fallback := fmt.Sprintf("http://%s:%d", a.config.Provisioning.ProjectHost, kongHostPort)
+	ensurer, ok := a.provisioner.(projectReachabilityEnsurer)
+	if !ok {
+		return fallback
+	}
+	base, err := ensurer.EnsureProjectReachable(ctx, ref)
+	if err != nil {
+		a.logger.Warn("could not join project network; falling back to host port", "ref", ref, "error", err.Error())
+		return fallback
+	}
+	return base
+}
 
 func (a *Api) anyPlatformPgMetaProxy(c *gin.Context) {
 	_, err := a.GetAccountFromRequest(c)
@@ -38,7 +65,7 @@ func (a *Api) anyPlatformPgMetaProxy(c *gin.Context) {
 		return
 	}
 
-	kongUrlStr := fmt.Sprintf("http://%s:%d", a.config.Provisioning.ProjectHost, project.KongHttpPort.Int32)
+	kongUrlStr := a.projectKongBaseURL(c.Request.Context(), projectRef, project.KongHttpPort.Int32)
 	remote, err := url.Parse(kongUrlStr)
 	if err != nil {
 		a.logger.Error("Failed to parse kong URL", "url", kongUrlStr, "error", err)

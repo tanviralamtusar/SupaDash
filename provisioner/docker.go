@@ -552,6 +552,59 @@ func (p *DockerProvisioner) GetPortAllocator() *PortAllocator {
 	return p.portAllocator
 }
 
+// EnsureProjectReachable makes sure the running API container shares a Docker
+// network with the given project's Kong gateway, then returns the internal base
+// URL (http://<ref>-kong:8000) to reach it.
+//
+// Provisioned project stacks publish their ports on the Docker host, but the
+// host firewall (e.g. Coolify's default rules) can block container->host
+// traffic — so dialing the published host port from inside the API container
+// times out. Routing container-to-container by name over a shared network
+// avoids the host entirely. Idempotent and safe to call on every request.
+func (p *DockerProvisioner) EnsureProjectReachable(ctx context.Context, ref string) (string, error) {
+	kong := ref + "-kong"
+
+	insp, err := p.client.ContainerInspect(ctx, kong)
+	if err != nil {
+		return "", fmt.Errorf("inspect kong container %q: %w", kong, err)
+	}
+
+	// The project's own network name contains "supabase-<ref>" (compose may
+	// prefix it). Fall back to any attached network if the naming changes.
+	var netName string
+	for name := range insp.NetworkSettings.Networks {
+		if strings.Contains(name, "supabase-"+ref) {
+			netName = name
+			break
+		}
+	}
+	if netName == "" {
+		for name := range insp.NetworkSettings.Networks {
+			netName = name
+			break
+		}
+	}
+	if netName == "" {
+		return "", fmt.Errorf("kong container %q has no network", kong)
+	}
+
+	// Docker sets a container's hostname to its own short ID by default, which
+	// NetworkConnect accepts as the container identifier.
+	self, err := os.Hostname()
+	if err != nil {
+		return "", fmt.Errorf("determine own container id: %w", err)
+	}
+
+	if err := p.client.NetworkConnect(ctx, netName, self, nil); err != nil {
+		msg := strings.ToLower(err.Error())
+		if !strings.Contains(msg, "already exists") && !strings.Contains(msg, "already connected") {
+			return "", fmt.Errorf("connect api container %q to network %q: %w", self, netName, err)
+		}
+	}
+
+	return fmt.Sprintf("http://%s:8000", kong), nil
+}
+
 // usedHostPorts returns the set of host ports currently published by any
 // Docker container. This is the authoritative source for avoiding port
 // collisions and, unlike an in-process net.Listen check, correctly reflects

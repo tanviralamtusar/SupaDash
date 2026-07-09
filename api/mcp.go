@@ -159,7 +159,7 @@ func (a *Api) projectKongRequest(ctx context.Context, project database.Project, 
 		return nil, errors.New("project has no service role key")
 	}
 
-	url := fmt.Sprintf("http://%s:%d%s", a.config.Provisioning.ProjectHost, project.KongHttpPort.Int32, path)
+	url := a.projectKongBaseURL(ctx, project.ProjectRef, project.KongHttpPort.Int32) + path
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, err
