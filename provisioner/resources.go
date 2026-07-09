@@ -89,38 +89,31 @@ func (rm *ResourceManager) SetProjectResources(ctx context.Context, projectID st
 		return fmt.Errorf("insufficient memory capacity: need %dMB, available %dMB", memoryLimit/(1024*1024), rm.totalMemory/(1024*1024)*9/10-currentUsed.UsedMemoryMB)
 	}
 
-	// Apply limits via docker update on all containers in the project
+	// Apply limits to the project's database container only. In Supabase, the
+	// plan's compute (RAM/CPU) sizes the Postgres instance; capping every one
+	// of the ~12 services at the plan memory would OOM-kill Postgres/Studio.
 	projectDir := rm.provisioner.getProjectDir(projectID)
-	cpuQuota := int64(cpuLimit * 100000) // Docker CPU quota in microseconds
-	memoryBytes := memoryLimit
 
-	// Get list of containers
-	psCmd := exec.CommandContext(ctx, "docker", "compose", "ps", "-q")
+	psCmd := exec.CommandContext(ctx, "docker", "compose", "ps", "-q", "db")
 	psCmd.Dir = projectDir
 	output, err := psCmd.Output()
 	if err != nil {
-		return fmt.Errorf("failed to list containers: %w", err)
+		return fmt.Errorf("failed to find db container: %w", err)
+	}
+	dbContainer := strings.TrimSpace(string(output))
+	if dbContainer == "" {
+		return fmt.Errorf("db container not found for project %s", projectID)
 	}
 
-	containerIDs := strings.Split(strings.TrimSpace(string(output)), "\n")
-	for _, containerID := range containerIDs {
-		containerID = strings.TrimSpace(containerID)
-		if containerID == "" {
-			continue
-		}
-
-		updateCmd := exec.CommandContext(ctx, "docker", "update",
-			"--cpus", fmt.Sprintf("%.2f", cpuLimit),
-			"--cpu-quota", fmt.Sprintf("%d", cpuQuota),
-			"--memory", fmt.Sprintf("%d", memoryBytes),
-			containerID,
-		)
-		if err := updateCmd.Run(); err != nil {
-			rm.logger.Warn("Failed to update container resources",
-				"container", containerID,
-				"error", err.Error(),
-			)
-		}
+	// NOTE: `docker update` rejects --cpus together with --cpu-quota
+	// ("Conflicting options"), so use only --cpus.
+	updateCmd := exec.CommandContext(ctx, "docker", "update",
+		"--cpus", fmt.Sprintf("%.2f", cpuLimit),
+		"--memory", fmt.Sprintf("%d", memoryLimit),
+		dbContainer,
+	)
+	if out, updErr := updateCmd.CombinedOutput(); updErr != nil {
+		return fmt.Errorf("failed to update db container resources: %w (%s)", updErr, strings.TrimSpace(string(out)))
 	}
 
 	// Update internal tracking
