@@ -55,6 +55,7 @@ func (a *Api) getPlatformProject(c *gin.Context) {
 		PreviewBranchRefs:        []interface{}{},
 		IsBranchEnabled:          false,
 		IsPhysicalBackupsEnabled: false,
+		CurrentAppVersion:        DefaultAppVersion,
 		Databases: []Database{
 			{
 				Identifier:       project.ProjectRef,

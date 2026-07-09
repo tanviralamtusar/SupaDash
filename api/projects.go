@@ -51,6 +51,15 @@ type Project struct {
 	PreviewBranchRefs        []interface{} `json:"preview_branch_refs"`
 	IsBranchEnabled          bool          `json:"is_branch_enabled"`
 	IsPhysicalBackupsEnabled bool          `json:"is_physical_backups_enabled"`
-	JwtSecret                string        `json:"jwt_secret,omitempty"` // JWT secret for the project
-	Databases                []Database    `json:"databases"`
+	// CurrentAppVersion is the Postgres image version string. Studio parses the
+	// major version from this (split("-") -> last -> split(".")[0]) to gate
+	// features on Postgres >= 15, and dereferences it WITHOUT a null guard, so
+	// it must always be a non-empty string or the project page crashes.
+	CurrentAppVersion string     `json:"current_app_version"`
+	JwtSecret         string     `json:"jwt_secret,omitempty"` // JWT secret for the project
+	Databases         []Database `json:"databases"`
 }
+
+// DefaultAppVersion is the Postgres image version reported to Studio. The
+// major component (15) satisfies Studio's Postgres >= 15 feature gates.
+const DefaultAppVersion = "supabase-postgres-15.8.1.060"
