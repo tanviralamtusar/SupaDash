@@ -175,11 +175,14 @@ func (a *Api) Router() *gin.Engine {
 		AllowOrigins: allowedOrigins,
 		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		// Studio (served on a different origin than the API) sends these on its
-		// cross-origin fetches; missing entries cause the preflight to fail.
+		// cross-origin fetches; any missing entry makes the preflight fail and
+		// crashes the page. Includes Studio's "version" header plus the
+		// PostgREST/pg-meta headers used by the SQL and table editors.
 		AllowHeaders: []string{
 			"Origin", "Authorization", "Content-Type", "Accept",
-			"apikey", "x-client-info", "x-supabase-api-version",
+			"apikey", "x-client-info", "x-supabase-api-version", "version",
 			"x-connection-encrypted", "x-request-id",
+			"Prefer", "Accept-Profile", "Content-Profile", "Range", "Range-Unit",
 		},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
