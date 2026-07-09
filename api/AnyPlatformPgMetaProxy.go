@@ -38,7 +38,7 @@ func (a *Api) anyPlatformPgMetaProxy(c *gin.Context) {
 		return
 	}
 
-	kongUrlStr := fmt.Sprintf("http://localhost:%d", project.KongHttpPort.Int32)
+	kongUrlStr := fmt.Sprintf("http://%s:%d", a.config.Provisioning.ProjectHost, project.KongHttpPort.Int32)
 	remote, err := url.Parse(kongUrlStr)
 	if err != nil {
 		a.logger.Error("Failed to parse kong URL", "url", kongUrlStr, "error", err)

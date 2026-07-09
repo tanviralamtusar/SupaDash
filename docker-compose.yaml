@@ -35,6 +35,12 @@ services:
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
       - 'supadash-projects:/app/projects'
+    # Provisioned projects run as separate compose stacks that publish their
+    # Kong/Postgres ports on the Docker host. The API reaches them via
+    # host.docker.internal (PROVISIONING_PROJECT_HOST default), which needs this
+    # mapping to resolve to the host on Linux.
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
 
   supadash-studio:
     # Tag is parameterized so a specific immutable build (date or commit SHA,

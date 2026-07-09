@@ -149,7 +149,8 @@ func (a *Api) mcpExecSQL(ctx context.Context, projectRef, dbName, sql string) (s
 }
 
 // projectKongRequest performs an HTTP request against a project's Kong
-// gateway (on localhost) with the project's service-role credentials.
+// gateway (via the configured project host) with the project's service-role
+// credentials.
 func (a *Api) projectKongRequest(ctx context.Context, project database.Project, method, path string, body io.Reader) ([]byte, error) {
 	if !project.KongHttpPort.Valid {
 		return nil, errors.New("project is not fully provisioned yet")
@@ -158,7 +159,7 @@ func (a *Api) projectKongRequest(ctx context.Context, project database.Project, 
 		return nil, errors.New("project has no service role key")
 	}
 
-	url := fmt.Sprintf("http://localhost:%d%s", project.KongHttpPort.Int32, path)
+	url := fmt.Sprintf("http://%s:%d%s", a.config.Provisioning.ProjectHost, project.KongHttpPort.Int32, path)
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, err

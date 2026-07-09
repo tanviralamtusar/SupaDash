@@ -24,6 +24,14 @@ type ProvisioningSettings struct {
 	ProjectsDir      string `json:"projects_dir" split_words:"true" default:"./projects"`
 	BasePostgresPort int    `json:"base_postgres_port" split_words:"true" default:"5433"`
 	BaseKongHTTPPort int    `json:"base_kong_http_port" split_words:"true" default:"54321"`
+	// ProjectHost is the hostname the API dials to reach a provisioned project's
+	// published Kong/Postgres ports. Projects run as separate compose stacks that
+	// publish their ports on the Docker HOST, so from inside the API container
+	// "localhost" is wrong — it must resolve to the host. On Docker this is
+	// host.docker.internal (requires `extra_hosts: host.docker.internal:host-gateway`
+	// on the api service). Set to "localhost" only when the API runs directly on
+	// the host (e.g. local dev without containerizing the API).
+	ProjectHost string `json:"project_host" split_words:"true" default:"host.docker.internal"`
 }
 
 type Config struct {
