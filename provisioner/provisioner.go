@@ -23,6 +23,11 @@ type ProjectConfig struct {
 	OrganizationID string // Owner organization
 	Region        string // Deployment region (for future multi-region support)
 
+	// HostProjectDir is the project directory as seen by the HOST Docker daemon
+	// (not the API container). Nested `docker compose` bind-mount sources must be
+	// host paths; empty falls back to the container-local project path.
+	HostProjectDir string
+
 	// Database configuration
 	DBPassword    string // PostgreSQL password
 	DBPort        int    // Exposed PostgreSQL port

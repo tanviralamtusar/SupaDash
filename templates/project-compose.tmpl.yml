@@ -34,6 +34,9 @@ services:
       - "{{.DBPort}}:5432"
     volumes:
       - db-data-{{.ProjectID}}:/var/lib/postgresql/data
+      # Runs after the image's role-creating migrations, on first init only,
+      # to set the internal Supabase roles' passwords to POSTGRES_PASSWORD.
+      - {{.HostProjectDir}}/roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:ro
     environment:
       POSTGRES_PASSWORD: {{.DBPassword}}
       POSTGRES_DB: postgres
@@ -67,7 +70,7 @@ services:
       DASHBOARD_USERNAME: {{.DashboardUser}}
       DASHBOARD_PASSWORD: {{.DashboardPass}}
     volumes:
-      - ./kong.yml:/var/lib/kong/kong.yml:ro
+      - {{.HostProjectDir}}/kong.yml:/var/lib/kong/kong.yml:ro
     depends_on:
       db:
         condition: service_healthy
@@ -313,7 +316,7 @@ services:
       SUPABASE_DB_URL: postgresql://postgres:{{.DBPassword}}@db:5432/postgres
       VERIFY_JWT: "false"
     volumes:
-      - ./functions:/home/deno/functions
+      - {{.HostProjectDir}}/functions:/home/deno/functions
     command: ["start", "--main-service", "/home/deno/functions/main"]
     healthcheck:
       test: ["CMD", "echo", "Edge Functions is healthy"]

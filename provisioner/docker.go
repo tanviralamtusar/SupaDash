@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -135,11 +136,26 @@ func (p *DockerProvisioner) CreateProject(ctx context.Context, config *ProjectCo
 		}
 	}
 
+	// Resolve the project directory as the HOST Docker daemon sees it. Nested
+	// `docker compose up` runs against the host daemon, so bind-mount sources in
+	// the generated compose (kong.yml, functions) must be host paths — not the
+	// API container's internal /app/projects path, which the host can't see
+	// (Docker would silently create empty directories in its place).
+	hostBase := p.hostProjectsDir(ctx)
+	if hostBase == "" {
+		hostBase = p.baseDir
+		p.logger.Warn("could not resolve host path for projects dir; bind mounts may fail under docker-in-docker",
+			"baseDir", p.baseDir)
+	}
+	config.HostProjectDir = path.Join(hostBase, config.ProjectID)
+	p.logger.Info("resolved host project dir for bind mounts", "projectID", config.ProjectID, "hostDir", config.HostProjectDir)
+
 	// Step 5: Render and write templates
 	templates := map[string]string{
 		"project-compose.tmpl.yml": "docker-compose.yml",
 		"kong.tmpl.yml":            "kong.yml",
 		"vector.tmpl.yml":          "vector.yml",
+		"roles.tmpl.sql":           "roles.sql",
 	}
 
 	for tmplFile, outputFile := range templates {
@@ -550,6 +566,39 @@ func (p *DockerProvisioner) cleanup(projectID string) {
 // GetPortAllocator returns the port allocator (for registering existing projects)
 func (p *DockerProvisioner) GetPortAllocator() *PortAllocator {
 	return p.portAllocator
+}
+
+// hostProjectsDir returns the host filesystem path that backs the API
+// container's projects directory (p.baseDir), by inspecting the API's own
+// container mounts. Nested `docker compose` runs against the host daemon, so
+// bind-mount sources in generated compose files must be host paths. Returns ""
+// if it cannot be resolved (e.g. the API runs directly on the host).
+func (p *DockerProvisioner) hostProjectsDir(ctx context.Context) string {
+	self, err := os.Hostname()
+	if err != nil {
+		return ""
+	}
+	insp, err := p.client.ContainerInspect(ctx, self)
+	if err != nil {
+		return ""
+	}
+
+	base := strings.TrimRight(filepath.ToSlash(p.baseDir), "/")
+	best := ""
+	for _, m := range insp.Mounts {
+		dest := strings.TrimRight(filepath.ToSlash(m.Destination), "/")
+		if dest == "" {
+			continue
+		}
+		if dest == base {
+			return m.Source // exact mount of the projects dir
+		}
+		// baseDir lives under this mount: append the remaining sub-path.
+		if strings.HasPrefix(base+"/", dest+"/") {
+			best = strings.TrimRight(m.Source, "/") + strings.TrimPrefix(base, dest)
+		}
+	}
+	return best
 }
 
 // EnsureProjectReachable makes sure the running API container shares a Docker
