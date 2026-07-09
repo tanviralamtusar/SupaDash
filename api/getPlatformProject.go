@@ -19,29 +19,47 @@ func (a *Api) getPlatformProject(c *gin.Context) {
 		return
 	}
 
+	dbPort := int32(0)
+	if project.PostgresPort.Valid {
+		dbPort = project.PostgresPort.Int32
+	}
+
+	insertedAt := ""
+	if project.CreatedAt.Valid {
+		insertedAt = project.CreatedAt.Time.Format("2006-01-02T15:04:05.999Z")
+	}
+
+	dbHost := "localhost"
+
 	c.JSON(http.StatusOK, Project{
 		Id:                       project.ID,
 		Ref:                      project.ProjectRef,
 		Name:                     project.ProjectName,
 		Status:                   project.Status,
 		OrganizationId:           project.OrganizationID,
-		InsertedAt:               "",
-		SubscriptionId:           "-",
-		CloudProvider:            "k8s",
-		Region:                   "mars-1",
+		InsertedAt:               insertedAt,
+		SubscriptionId:           "self-hosted",
+		CloudProvider:            project.CloudProvider,
+		Region:                   project.Region,
 		DiskVolumeSizeGb:         0,
 		Size:                     "",
-		DbUserSupabase:           "",
+		DbUserSupabase:           "postgres",
 		DbPassSupabase:           "",
-		DbDnsName:                "",
-		DbHost:                   "",
-		DbPort:                   0,
-		DbName:                   "",
+		DbDnsName:                dbHost,
+		DbHost:                   dbHost,
+		DbPort:                   dbPort,
+		DbName:                   "postgres",
 		SslEnforced:              false,
 		WalgEnabled:              false,
-		InfraComputeSize:         "",
+		InfraComputeSize:         "self-hosted",
 		PreviewBranchRefs:        []interface{}{},
 		IsBranchEnabled:          false,
 		IsPhysicalBackupsEnabled: false,
+		Databases: []Database{
+			{
+				Identifier:       project.ProjectRef,
+				InfraComputeSize: "self-hosted",
+			},
+		},
 	})
 }
